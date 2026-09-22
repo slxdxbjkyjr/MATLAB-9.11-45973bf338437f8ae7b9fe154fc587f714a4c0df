@@ -80,3 +80,38 @@ final_state = [9.6753, 3.7442, 0.2005, 0.5000, 5.5000]
 ```
 
 本日仍未接入多车时空碰撞、速度优化或 Simulink 控制器。
+
+## 6. Day 2 召集路径接入
+
+新增 `tests/generate_day3_summon_plot.m`，默认读取 Day 2 场景中的
+`vehicle_002`，调用 `summon_hybrid_astar` 生成空间路径，再调用
+`summon_vehicle_dynamic` 为路径点生成受速度和加速度约束的时间参数。
+
+输出文件：
+
+- `outputs/day3_summon_path_vehicle_002.png`：Day 3 召集空间路径图；
+- `outputs/day3_summon_vt_vehicle_002.png`：带方向速度的 v-t 图；
+- `outputs/day3_summon_vehicle_002.mat`：路径、时间和速度数组。
+
+该版本仍是单车原型。速度参数化不改变 Day 2 的空间路径，也不代表实车标定；
+真实召集阶段的速度、加速度和倒车速度约束仍需后续实测数据确认。
+
+### 6.1 目标点停车修正
+
+`generate_day3_summon_plot.m` 现在根据路径剩余距离计算允许的停车速度
+`sqrt(2*abs(a_min)*remaining_distance)`，在目标点将速度设置为 `0 m/s`，
+并重新按相邻路径点平均速度积分时间。因此生成的 v-t 曲线在终点归零，表示车辆
+到达召集点后停车。运行输出会打印 `terminal_speed=0.000000 m/s` 作为验收依据。
+
+### 6.2 速度优化与物理连续性
+
+速度不再直接跳变到巡航值。程序采用基于路径弧长的前向/后向约束传播：
+前向传播限制 `a <= a_max`，后向传播限制 `a >= a_min`；前进和倒车方向
+切换位置被设置为停车点。每段速度通过 `summon_vehicle_dynamic` 反算时间并校核，
+最终输出会打印加速度范围，例如 `acceleration_range=[-2.000000, 2.000000]`。
+
+### 6.3 换挡时间
+
+`config/planner_config.json` 的 `dynamics.direction_change_time_s` 设为 `0.5 s`。
+每次前进/倒车切换时，车辆先在换挡点保持 `v=0` 等待该时间，再进入下一段；
+换挡等待不会被错误地计入车辆加速度，v-t 图中会显示水平的零速等待段。

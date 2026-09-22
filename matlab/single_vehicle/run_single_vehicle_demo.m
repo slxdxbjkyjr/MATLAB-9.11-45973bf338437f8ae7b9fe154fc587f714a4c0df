@@ -12,7 +12,7 @@ function path = run_single_vehicle_demo(vehicle_id)
 this_dir = fileparts(mfilename('fullpath'));
 project_dir = fileparts(fileparts(this_dir));
 config_dir = fullfile(project_dir, 'config');
-if nargin < 1, vehicle_id = 'vehicle_001'; end
+if nargin < 1, vehicle_id = 'vehicle_002'; end
 output_file = fullfile(project_dir, 'outputs', ['day2_single_' char(vehicle_id) '.png']);
 
 vehicle_config = jsondecode(fileread(fullfile(config_dir, 'vehicle_config.json')));

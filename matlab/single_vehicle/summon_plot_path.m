@@ -28,6 +28,10 @@ for k = 1:numel(map.obstacles)
     patch(obstacle(:,1), obstacle(:,2), [0.45,0.45,0.45], ...
         'DisplayName', 'static obstacle');
 end
+
+% 先绘制车辆示意，再绘制路径，避免车身矩形覆盖轨迹造成视觉断线。
+drawVehicle(path.x(1), path.y(1), path.theta(1), vehicle_config, [0.2,0.65,0.95]);
+drawVehicle(path.x(end), path.y(end), path.theta(end), vehicle_config, [1.0,0.65,0.2]);
 plot(path.x, path.y, 'b-', 'LineWidth', 1.6, 'DisplayName', 'Hybrid A* path');
 plot(path.x(1), path.y(1), 'go', 'MarkerFaceColor', 'g', ...
     'DisplayName', 'start');
@@ -42,8 +46,6 @@ end
 quiver(path.x(end),path.y(end),2*cos(path.theta(end)),2*sin(path.theta(end)), ...
     0,'r-','LineWidth',1.5,'DisplayName','actual heading');
 
-drawVehicle(path.x(1), path.y(1), path.theta(1), vehicle_config, [0.2,0.65,0.95]);
-drawVehicle(path.x(end), path.y(end), path.theta(end), vehicle_config, [1.0,0.65,0.2]);
 xlabel('x / m'); ylabel('y / m');
 title(sprintf('Single-vehicle summon path, expanded = %d', ...
     statistics.expanded_nodes));
