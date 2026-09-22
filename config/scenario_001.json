@@ -1,0 +1,38 @@
+{
+  "schema_version": "day1.v1",
+  "scenario_id": "scenario_001",
+  "description": "三车从不同初始位置驶向三个召集点的最小场景",
+  "source": "day1_prototype_assumption",
+  "map_config": "map_config.json",
+  "vehicle_config": "vehicle_config.json",
+  "planner_config": "planner_config.json",
+  "vehicles": [
+    {
+      "id": "vehicle_001",
+      "vehicle_type": "F515_APA_Seres_V3p24",
+      "priority": 1,
+      "start_pose": {"x_m": 3.0, "y_m": 3.0, "yaw_rad": 0.0},
+      "summon_goal": {"id": "summon_point_001", "x_m": 24.0, "y_m": 5, "yaw_rad": 0}
+    },
+    {
+      "id": "vehicle_002",
+      "vehicle_type": "F515_APA_Seres_V3p24",
+      "priority": 2,
+      "start_pose": {"x_m": 27.0, "y_m": 17.0, "yaw_rad": 3.1415926536},
+      "summon_goal": {"id": "summon_point_002", "x_m": 15.0, "y_m": 9.0, "yaw_rad": 3.1415926536}
+    },
+    {
+      "id": "vehicle_003",
+      "vehicle_type": "F515_APA_Seres_V3p24",
+      "priority": 3,
+      "start_pose": {"x_m": 4.0, "y_m": 17.0, "yaw_rad": -1.5707963268},
+      "summon_goal": {"id": "summon_point_003", "x_m": 24.0, "y_m": 15.0, "yaw_rad": 1.5707963268}
+    }
+  ],
+  "static_obstacles": [],
+  "todo": [
+    "用真实停车位出口位置替换三个 start_pose",
+    "用调度系统给出的召集点替换三个 summon_goal",
+    "补充真实静态障碍物和不可行驶区域"
+  ]
+}

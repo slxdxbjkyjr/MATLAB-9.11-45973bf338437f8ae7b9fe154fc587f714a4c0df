@@ -1,0 +1,7 @@
+              position_error_m    heading_error_deg    expanded_nodes    generated_nodes    collision_pruned_nodes    elapsed_sec    path_length_m
+              ________________    _________________    ______________    _______________    ______________________    ___________    _____________
+
+    Before          0.95953              13.051             3077              54044                    8                31.268          13.992    
+    After        1.7764e-15           1.667e-13             1986              35730                  330                16.229          19.305    
+
+PASS: start/end, heading, continuity, curvature, direction and 461 collision samples.

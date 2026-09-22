@@ -1,0 +1,3 @@
+Row,position_error_m,heading_error_deg,expanded_nodes,generated_nodes,collision_pruned_nodes,elapsed_sec,path_length_m
+Before,0.959525890538645,13.0512906310208,3077,54044,8,31.2683328,13.9920867928908
+After,1.77635683940025e-15,1.66700043307319e-13,1986,35730,330,16.228975,19.3050078186823

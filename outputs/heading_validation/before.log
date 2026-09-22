@@ -1,0 +1,5 @@
+[警告: 对于图像输出，'ContentType' 参数在设置为 'vector' 时将被忽略。] 
+valid=1, error_code=0
+expanded_nodes=3077, generated_nodes=54044, collision_pruned=8
+elapsed_sec=31.268333, output=F:\study\postgraduate\联培\路径规划论文\代码\辅助\day 4\MATLAB-9.11-45973bf338437f8ae7b9fe154fc587f714a4c0df\outputs\day2_single_vehicle_002.png
+END 15.193509401 9.939810644 -2.913804660

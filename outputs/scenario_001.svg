@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 30 20">
+  <title>scenario_001 summon scene</title>
+  <rect x="0" y="0" width="30" height="20" fill="#f4f6f8"/>
+  <rect x="0.3" y="0.3" width="29.4" height="19.4" fill="none" stroke="#263238" stroke-width="0.12"/>
+  <line x1="0" y1="10" x2="30" y2="10" stroke="#b0bec5" stroke-width="2" stroke-dasharray="0.7,0.5"/>
+  <text x="1" y="1.2" font-size="0.55" fill="#263238">scenario_001 - prototype road boundary</text>
+  <g id="summon-points" fill="#ef5350" stroke="#8e0000" stroke-width="0.08">
+    <circle cx="24" cy="5" r="0.32"/><circle cx="15" cy="10" r="0.32"/><circle cx="24" cy="15" r="0.32"/>
+  </g>
+  <g font-size="0.55" fill="#8e0000">
+    <text x="24.4" y="4.8">summon_point_001</text><text x="15.4" y="9.8">summon_point_002</text><text x="24.4" y="14.8">summon_point_003</text>
+  </g>
+  <g id="vehicle-001" transform="translate(3,3) rotate(0)">
+    <rect x="-2.3815" y="-0.9275" width="4.763" height="1.855" rx="0.12" fill="#42a5f5" stroke="#0d47a1" stroke-width="0.08"/><circle cx="1.55" cy="0" r="0.1" fill="#0d47a1"/>
+  </g>
+  <g id="vehicle-002" transform="translate(27,17) rotate(180)">
+    <rect x="-2.3815" y="-0.9275" width="4.763" height="1.855" rx="0.12" fill="#66bb6a" stroke="#1b5e20" stroke-width="0.08"/><circle cx="1.55" cy="0" r="0.1" fill="#1b5e20"/>
+  </g>
+  <g id="vehicle-003" transform="translate(4,17) rotate(-90)">
+    <rect x="-2.3815" y="-0.9275" width="4.763" height="1.855" rx="0.12" fill="#ab47bc" stroke="#4a148c" stroke-width="0.08"/><circle cx="1.55" cy="0" r="0.1" fill="#4a148c"/>
+  </g>
+  <g font-size="0.58" fill="#263238">
+    <text x="1.3" y="3">vehicle_001 start</text><text x="25.0" y="17.7">vehicle_002 start</text><text x="4.5" y="17.9">vehicle_003 start</text>
+  </g>
+  <g transform="translate(1,19.1)" font-size="0.55">
+    <rect x="0" y="-0.45" width="0.7" height="0.3" fill="#42a5f5"/><text x="0.9" y="-0.18">vehicle</text><circle cx="4.0" cy="-0.3" r="0.16" fill="#ef5350"/><text x="4.35" y="-0.18">summon point</text>
+  </g>
+</svg>

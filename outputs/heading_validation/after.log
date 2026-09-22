@@ -1,0 +1,5 @@
+goal=[15.000000 9.000000 3.141593], actual=[15.000000 9.000000 -3.141593]
+position_error_m=0.000000000, heading_error_deg=0.000000000
+valid=1, error_code=0
+expanded_nodes=1986, generated_nodes=35730, collision_pruned=330
+elapsed_sec=16.228975, output=F:\study\postgraduate\联培\路径规划论文\代码\辅助\day 4\MATLAB-9.11-45973bf338437f8ae7b9fe154fc587f714a4c0df\outputs\day2_single_vehicle_002.png
