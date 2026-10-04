@@ -9,7 +9,7 @@ function path = run_vhybrid_astar_demo(vehicle_index, save_outputs)
 %   使用 x/y/yaw/v/time 五维索引查重。搜索仅考虑静态道路边界，不使用多车动态障碍物。
 %   完成后输出搜索节点、最终路径以及速度-时间曲线图。
 
-if nargin < 1, vehicle_index = 2; end
+if nargin < 1, vehicle_index = 3; end
 if nargin < 2, save_outputs = true; end
 this_dir = fileparts(mfilename('fullpath'));
 project_dir = fileparts(fileparts(this_dir));
