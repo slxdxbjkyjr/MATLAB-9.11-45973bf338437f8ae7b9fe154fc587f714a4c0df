@@ -32,23 +32,37 @@ end
 % 先绘制车辆示意，再绘制路径，避免车身矩形覆盖轨迹造成视觉断线。
 drawVehicle(path.x(1), path.y(1), path.theta(1), vehicle_config, [0.2,0.65,0.95]);
 drawVehicle(path.x(end), path.y(end), path.theta(end), vehicle_config, [1.0,0.65,0.2]);
-plot(path.x, path.y, 'b-', 'LineWidth', 1.6, 'DisplayName', 'Hybrid A* path');
+plot(path.x, path.y, 'b-', 'LineWidth', 1.6, 'DisplayName', 'planned trajectory');
+% 在轨迹上均匀选择最多 9 个状态绘制车身航向，直观检查末端切线是否连续。
+heading_samples = unique(round(linspace(1, numel(path.x), min(9, numel(path.x)))));
+quiver(path.x(heading_samples), path.y(heading_samples), ...
+    0.7*cos(path.theta(heading_samples)), 0.7*sin(path.theta(heading_samples)), ...
+    0, 'Color', [0.1,0.25,0.85], 'LineWidth', 1.1, ...
+    'HandleVisibility', 'off');
 plot(path.x(1), path.y(1), 'go', 'MarkerFaceColor', 'g', ...
     'DisplayName', 'start');
 plot(path.x(end), path.y(end), 'rx', 'LineWidth', 2, 'MarkerSize', 10, ...
     'DisplayName', 'actual endpoint');
-if isfield(path,'goal_pose')
+headingError = NaN;
+if isfield(path,'goal_pose') && numel(path.goal_pose) >= 3
     g = path.goal_pose;
     plot(g(1),g(2),'kp','MarkerSize',13,'DisplayName','requested goal');
     quiver(g(1),g(2),2*cos(g(3)),2*sin(g(3)),0,'k--', ...
         'LineWidth',2,'DisplayName','requested heading');
+    headingError = abs(atan2(sin(path.theta(end)-g(3)), ...
+        cos(path.theta(end)-g(3)))) * 180/pi;
 end
 quiver(path.x(end),path.y(end),2*cos(path.theta(end)),2*sin(path.theta(end)), ...
     0,'r-','LineWidth',1.5,'DisplayName','actual heading');
 
 xlabel('x / m'); ylabel('y / m');
-title(sprintf('Single-vehicle summon path, expanded = %d', ...
-    statistics.expanded_nodes));
+if isfinite(headingError)
+    title(sprintf('Summon path, heading error = %.3f deg, expanded = %d', ...
+        headingError, statistics.expanded_nodes));
+else
+    title(sprintf('Single-vehicle summon path, expanded = %d', ...
+        statistics.expanded_nodes));
+end
 legend('Location', 'best');
 
 if nargin >= 4 && ~isempty(output_file)

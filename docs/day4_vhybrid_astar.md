@@ -1,78 +1,72 @@
 # Day 4：单车 V-Hybrid A* 核心节点扩展
 
-## 1. 节点状态
+## 1. 状态、接口与范围
 
-Day 4 将普通 Hybrid A* 的连续状态从 `[x,y,theta]` 扩展为：
+连续状态为 `[x,y,theta,v,t]`，单位分别为 m、m、rad、m/s、s。位置参考点是车辆后轴中心。节点还保存加速度、前轮转角、父节点、`g/h/f` 代价和 `x_index/y_index/yaw_index/velocity_index/time_index` 五维索引。不同航向、速度或时间的节点不能只因位置相同而合并。
 
-```text
-[x, y, theta, v, t]
-```
+本日只处理单车与静态障碍物，不启用 Day 5 时空占用、Day 6 顺序多车规划、轨迹优化或控制器。
 
-节点额外保存加速度、前轮转角、父节点和 `g/h/f` 代价，并保存五维离散索引：
-
-```text
-x_index, y_index, yaw_index, velocity_index, time_index
-```
-
-时间和速度索引进入 Closed 键，因此同一位置但不同时间、速度或航向不会被错误合并。
-
-## 2. 新增文件
+## 2. 文件与职责
 
 | 文件 | 作用 |
 |---|---|
-| `vhybrid_node.m` | 节点结构和五维索引字段 |
-| `vhybrid_expand_node.m` | 3 个加速度 × 3 个转角采样、运动学推进、真实目标启发和静态碰撞裁剪 |
-| `vhybrid_open_set.m` | 按最小 `f_cost` 取节点的 Open 集合 |
-| `vhybrid_closed_set.m` | 五维状态索引查重的 Closed 集合 |
-| `vhybrid_cost.m` | 距离、速度变化、航向变化、目标距离和时间代价 |
-| `run_vhybrid_astar_demo.m` | Day 1 `vehicle_001` 单车搜索 Demo |
+| `vhybrid_node.m` | 节点结构与五维离散索引 |
+| `vhybrid_expand_node.m` | 配置化加速度/转角采样、运动学推进与中间碰撞检查 |
+| `vhybrid_open_set.m` | 最小 `f_cost` 选择、同一状态键更小 `g_cost` 更新 |
+| `vhybrid_closed_set.m` | 五维状态查重 |
+| `vhybrid_cost.m` | 距离、速度变化、参考速度偏差、航向、时间代价与目标启发 |
+| `vhybrid_goal_connection.m` | 真正的 Dubins 几何连接与有界加减速停车 |
+| `run_vhybrid_astar_demo.m` | 场景加载、搜索、回溯、终点验收和全路径运动学重放 |
+| `summon_vehicle_dynamic.m` | Day 3 自行车运动学，所有轨迹边使用同一积分模型 |
+| `summon_plot_path.m` | 请求/实际终点姿态和沿途车身航向显示 |
 
-## 3. 节点扩展
+## 3. 节点扩展与运动学
 
-每个节点采样：
+控制采样、状态分辨率、搜索上限、参考速度、代价权重及连接距离均集中在 `config/planner_config.json` 的 `vhybrid` 节。每个控制组合调用已有 `summon_vehicle_dynamic`，同时检查整个运动段的中间状态，避免仅检查终点漏掉静态障碍物。
 
-- 加速度：`[-a_max, 0, +a_max]`；
-- 前轮转角：`[-delta_max, 0, +delta_max]`。
+Day 3 模型使用 `v_next = v + a*dt`、`ds = (v+v_next)*dt/2` 和 `curvature = tan(delta)/L`，在恒定曲率下积分位置与航向。论文的节点扩展使用 `ds = v_next*dt` 近似；当前原型保留 Day 3 平均速度积分，并在普通扩展、终点连接和验证中统一使用，避免混用两种位移模型。
 
-每个组合通过 Day 3 的 `summon_vehicle_dynamic` 计算下一状态，再通过 `summon_collision_check` 检查道路边界和静态障碍物。当前场景没有多车动态障碍物。
+速度、加速度、转角均按配置限制。边界上的机器精度误差允许以浮点容差处理，但超出物理约束的控制仍拒绝；不能通过大幅截断速度来隐藏不一致。
 
-## 4. 搜索流程
+## 4. 终点航向突变根因与修复
 
-1. 初始化起点节点并放入 Open。
-2. 取出 `f_cost` 最小节点。
-3. 用五维离散索引加入 Closed。
-4. 判断位置和航向终点容差。
-5. 扩展 9 个控制组合。
-6. 对未关闭节点计算代价并加入 Open。
-7. 达到目标时沿 `parent_id` 回溯路径。
-8. Open 为空、节点数超限或搜索时间超限时返回错误码。
+旧连接对位置、航向和速度分别插值，转角记录为零时航向仍然变化；最后又强制写入目标位置、航向与速度。数值上的零航向误差不能证明该路径能够执行。典型错误段移动约 `0.368 m`，速度时间积分仅允许约 `0.0187 m`。
 
-错误码：`0` 成功，`2` 起点碰撞，`3` 终点碰撞，`4` Open 为空，`5` 最大节点数，`6` 最大搜索时间。
+现在枚举六种真实 Dubins 曲线：`LSL/RSR/LSR/RSL/RLR/LRL`。最小转弯半径为 `L/tan(delta_max)`，圆弧由左右极限转角实现，直线段使用零转角。连接范围配置为 12 m，允许搜索节点在仍有空间完成转弯时连接目标。
 
-## 5. 代价函数
+连接的加速、巡航、制动时间由剩余弧长和速度边界确定，每一个输出状态均由 `summon_vehicle_dynamic` 推进，并检查静态碰撞。减速到目标速度后才能成功返回，当前场景目标速度为 `0 m/s`。不对 `x/y/theta/v` 进行独立插值，也不在最后一个节点直接覆盖目标姿态。
 
-累计代价至少包含：
+## 5. 搜索与验收
 
-- 带方向行驶距离；
-- 速度变化；
-- 航向变化；
-- 时间增量；
-- 到目标位置/航向的启发距离；
-- 到目标时间的统计项。
+1. 检查起点和目标碰撞，初始化 Open。
+2. 取出最小 `f_cost` 节点，以五维状态索引加入 Closed。
+3. 在配置范围内尝试运动学一致的 Dubins 终点连接。
+4. 若连接失败，继续扩展加速度与转角组合；Open 对同键更小 `g_cost` 更新。
+5. 成功后回溯父节点并拼接连接状态。
+6. 检查最终位置、航向和速度，再逐边用记录的加速度、转角与时间间隔重放完整路径，比较 `x/y/theta/v/t`。
+7. 搜索上限或验收失败时返回明确错误码，不能将失败轨迹标记为有效。
 
-所有离散分辨率、搜索上限和权重集中在 `config/planner_config.json` 的 `vhybrid` 节，当前新增值标记为原型假设/TODO。
+错误码：`0` 成功，`2` 起点碰撞，`3` 终点碰撞，`4` Open 为空，`5` 最大节点数，`6` 最大搜索时间，`7` 终点姿态或运动学验收失败。
 
-## 6. 输出
+统一输出包括 `path.x/y/theta/v/t/direction`、控制信息、`valid/error_code/search_statistics`、`goal_pose` 以及最终位置、航向、速度误差与运动学重放结果。
 
-统一路径输出增加：
+## 6. 图像与运行
 
-```text
-path.x, path.y, path.theta, path.v, path.t, path.direction
-path.valid, path.error_code, path.search_statistics
-```
+运行 `run_vhybrid_astar_demo()` 默认使用车辆 2；也可显式选择车辆。主图显示请求航向、实际航向和沿途最多 9 个车身航向箭头，蓝线末端切线应与目标朝向一致。
 
-图像输出为 `outputs/day4_vhybrid_astar.png`，包含搜索节点、最终路径和路径速度/时间曲线。
+| 输出 | 内容 |
+|---|---|
+| `outputs/day4_vhybrid_astar.png` | 地图、轨迹、目标/实际姿态和沿途航向 |
+| `outputs/day4_vhybrid_speed_time.png` | 物理连续加减速及终点停车速度曲线 |
+| `outputs/day4_vhybrid_search.png` | 搜索节点、轨迹、速度时间和展开航向四格图 |
+| `outputs/day4_kinematics_validation.json` | 三辆车规划及全路径模型重放验证结果 |
 
-## 7. 测试
+`tests/generate_vhybrid_plot.m` 使用 `run_vhybrid_astar_demo(2,false)`，保存独立搜索图，避免覆盖主轨迹图。航向图使用 `unwrap` 消除正负 pi 的表示跳变；这不会修改规划状态。
 
-`tests/test_vhybrid_core.m` 使用 `matlab.unittest.TestCase`，覆盖节点字段、五维查重、9 控制组合、代价项、Open 最小代价选择和 Demo 集成。当前阶段不包含多车动态障碍物、轨迹优化和控制器。
+## 7. 测试、问题与下一步
+
+恢复前最新版本的 MATLAB 验证为 24/24 通过，三辆场景车辆均成功规划。车辆 2 到达 `(15,9)`，终端航向 `180 deg`、速度 `0 m/s`；全路径重放位置误差约 `5e-15 m`。恢复后的实际测试结果以本次重新运行输出为准。
+
+测试覆盖节点字段、五维键、Open 更新、参考速度代价、静态碰撞、Dubins 连接、终点停车、禁止零位移航向变化以及逐边运动学一致性。
+
+当前没有施加 jerk 或转角变化率约束，圆弧/直线切换时控制量可能分段变化，但车辆位置、航向和速度由同一运动学模型连续生成。Day 5 建议继续实现独立 X-Y-T 占用模块，不提前接入动态多车或轨迹优化。

@@ -20,9 +20,17 @@ function [children, statistics] = vhybrid_expand_node(parent_node, map, ...
 
 cfg = planner_config.vhybrid;
 dynamics = planner_config.dynamics;
-acceleration_values = [-dynamics.a_max_mps2, 0, dynamics.a_max_mps2];
-steering_values = [-vehicle_config.steering.maximum_steer_rad, 0, ...
-    vehicle_config.steering.maximum_steer_rad];
+if isfield(cfg, 'control_acceleration_samples_mps2')
+    acceleration_values = double(cfg.control_acceleration_samples_mps2(:).');
+else
+    acceleration_values = [-dynamics.a_max_mps2, 0, dynamics.a_max_mps2];
+end
+if isfield(cfg, 'control_steering_samples_rad')
+    steering_values = double(cfg.control_steering_samples_rad(:).');
+else
+    steering_values = [-vehicle_config.steering.maximum_steer_rad, 0, ...
+        vehicle_config.steering.maximum_steer_rad];
+end
 children = repmat(vhybrid_node(), 0, 1);
 statistics = struct('sampled', 0, 'valid', 0, 'collision_pruned', 0, ...
     'constraint_pruned', 0);
@@ -41,8 +49,24 @@ for acceleration = acceleration_values
             statistics.constraint_pruned = statistics.constraint_pruned + 1;
             continue;
         end
-        [is_collision, ~] = summon_collision_check(next_state(1:3), map, vehicle_config);
-        if is_collision
+        % 中间状态沿真实圆弧积分，禁止用直线 xy/yaw 插值代替扫掠轨迹。
+        sample_count = max(2,ceil(abs(distance)/cfg.collision_check_step_m));
+        collision = false;
+        for sample_id = 1:sample_count
+            ratio = sample_id/sample_count;
+            [sample_state,~,~,sample_valid] = summon_vehicle_dynamic( ...
+                current_state,steering_angle,acceleration,cfg.time_step_s*ratio, ...
+                vehicle_config.dimensions_m.wheelbase,dynamics.v_max_mps, ...
+                dynamics.v_min_mps,dynamics.a_min_mps2,dynamics.a_max_mps2, ...
+                vehicle_config.steering.maximum_steer_rad);
+            if ~sample_valid
+                collision = true; break;
+            end
+            if summon_collision_check(sample_state(1:3),map,vehicle_config)
+                collision = true; break;
+            end
+        end
+        if collision
             statistics.collision_pruned = statistics.collision_pruned + 1;
             continue;
         end

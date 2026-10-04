@@ -50,9 +50,14 @@ theta = double(current_state(3));
 v = double(current_state(4));
 t = double(current_state(5));
 v_next = v + acceleration * dt;
-if v_next < v_min || v_next > v_max
+% 精确制动末步可能出现机器精度级正/负残余，仅容忍浮点舍入；
+% 明显超速/负速仍无效，不能用速度截断替代真实加减速。
+speed_roundoff = 64 * eps(max(1, max(abs([v_min,v_max]))));
+if v_next < v_min-speed_roundoff || v_next > v_max+speed_roundoff
     return;
 end
+if abs(v_next-v_min) <= speed_roundoff, v_next = v_min; end
+if abs(v_next-v_max) <= speed_roundoff, v_next = v_max; end
 
 travelled_distance = 0.5 * (v + v_next) * dt;
 curvature = tan(delta) / wheelbase;
