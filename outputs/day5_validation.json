@@ -1,0 +1,558 @@
+{
+  "matlab_version": "9.14.0.2206163 (R2023a)",
+  "generated_at": "2026-10-04 17:31:25",
+  "tests": {
+    "total": 79,
+    "passed": 79,
+    "failed": 0,
+    "incomplete": 0
+  },
+  "test_details": [
+    {
+      "name": "test_st_occupancy_map/resourceDimensionsAndCoordinates",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0872387
+    },
+    {
+      "name": "test_st_occupancy_map/lowerBoundsBelongToFirstBlock",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.016641
+    },
+    {
+      "name": "test_st_occupancy_map/interiorEdgesBelongToNextBlock",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0060219
+    },
+    {
+      "name": "test_st_occupancy_map/representableCoordinatesBelowUpperBoundsUseLastBlocks",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.004327
+    },
+    {
+      "name": "test_st_occupancy_map/decimalResolutionEdgesUseSameHalfOpenConvention",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0125591
+    },
+    {
+      "name": "test_st_occupancy_map/spatialUpperBoundIsPermanentlyInfeasible",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0144977
+    },
+    {
+      "name": "test_st_occupancy_map/timeUpperBoundIsPermanentlyInfeasible",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0030067
+    },
+    {
+      "name": "test_st_occupancy_map/negativeCoordinateIsPermanentlyInfeasible",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0031706
+    },
+    {
+      "name": "test_st_occupancy_map/nonfiniteQueryIsPermanentlyInfeasible",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0026139
+    },
+    {
+      "name": "test_st_occupancy_map/searchStepMayBeIntegerMultipleOfLayerStep",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0043416
+    },
+    {
+      "name": "test_st_occupancy_map/mismatchedSearchStepRejected",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0054483
+    },
+    {
+      "name": "test_st_occupancy_map/nonnumericSearchStepRejected",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.003819
+    },
+    {
+      "name": "test_st_occupancy_map/fractionalSpatialSpanRejected",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0036995
+    },
+    {
+      "name": "test_st_occupancy_map/nonpositiveResolutionRejected",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0053945
+    },
+    {
+      "name": "test_st_occupancy_map/unsupportedCoordinateConventionRejected",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0033905
+    },
+    {
+      "name": "test_st_occupancy_map/nonfiniteConfigFieldRejected",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0042027
+    },
+    {
+      "name": "test_st_occupancy_map/nonscalarConfigFieldRejected",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0038476
+    },
+    {
+      "name": "test_st_occupancy_map/nonscalarPlannerConfigRejected",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0045422
+    },
+    {
+      "name": "test_st_occupancy_map/nonfiniteResourceLimitRejected",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.002913
+    },
+    {
+      "name": "test_st_occupancy_map/vehicleInflationIncludesAsymmetryAndMargins",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0223037
+    },
+    {
+      "name": "test_st_occupancy_map/nonnumericVehicleDimensionRejected",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0043614
+    },
+    {
+      "name": "test_st_occupancy_map/missingVehicleDimensionRejected",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0039916
+    },
+    {
+      "name": "test_st_occupancy_map/nonfiniteVehicleDimensionRejected",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0043544
+    },
+    {
+      "name": "test_st_occupancy_map/missingVehicleSafetyMarginRejected",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0057223
+    },
+    {
+      "name": "test_st_occupancy_map/complexVehicleSafetyMarginRejected",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0044035
+    },
+    {
+      "name": "test_st_occupancy_map/staticObstacleOccupiesEveryTimeLayer",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0296008
+    },
+    {
+      "name": "test_st_occupancy_map/longPolygonEdgeInflatedAwayFromVertices",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0164791
+    },
+    {
+      "name": "test_st_occupancy_map/parkingBoundaryOccupiesEveryTimeLayer",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0125433
+    },
+    {
+      "name": "test_st_occupancy_map/concaveBoundaryAndItsInnerEdgesHandled",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0076567
+    },
+    {
+      "name": "test_st_occupancy_map/dynamicOccupancyLimitedToTrajectoryTime",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0312005
+    },
+    {
+      "name": "test_st_occupancy_map/sameSpaceDifferentTimeDoesNotConflict",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0237999
+    },
+    {
+      "name": "test_st_occupancy_map/sameTimeSameSpacePreservesBothVehicleIds",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0213772
+    },
+    {
+      "name": "test_st_occupancy_map/threeOverlappingOwnersAreAllReported",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0139233
+    },
+    {
+      "name": "test_st_occupancy_map/repeatedOwnerMarkingDoesNotCreateFalseConflict",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0100653
+    },
+    {
+      "name": "test_st_occupancy_map/dynamicOverlapDoesNotEraseStaticOwner",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0185554
+    },
+    {
+      "name": "test_st_occupancy_map/rotatedAsymmetricFootprintUsesRearAxleOrigin",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0127333
+    },
+    {
+      "name": "test_st_occupancy_map/footprintCellIntersectionDoesNotRequireCellCenterInside",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0061677
+    },
+    {
+      "name": "test_st_occupancy_map/fastMotionBetweenTimeCentersUsesSweptOccupancy",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0105995
+    },
+    {
+      "name": "test_st_occupancy_map/angularInterpolationTakesShortRouteAcrossPi",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0053608
+    },
+    {
+      "name": "test_st_occupancy_map/rotatingSegmentSweepsBetweenEndpointFootprints",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0053457
+    },
+    {
+      "name": "test_st_occupancy_map/pathStructInterfaceAccepted",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0130165
+    },
+    {
+      "name": "test_st_occupancy_map/singletonTrajectoryOccupiesOneReleaseLayer",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0058764
+    },
+    {
+      "name": "test_st_occupancy_map/nearUpperBoundSingletonUsesLastValidBlocks",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0140433
+    },
+    {
+      "name": "test_st_occupancy_map/terminalPointOnTimeEdgeOccupiesItsOwnLayer",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0050648
+    },
+    {
+      "name": "test_st_occupancy_map/heldTerminalVehicleOccupiesRemainingHorizon",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0110373
+    },
+    {
+      "name": "test_st_occupancy_map/movingTerminalVehicleCannotBeHeldAsParked",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0167762
+    },
+    {
+      "name": "test_st_occupancy_map/duplicateTrajectoryTimesRejected",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.006268
+    },
+    {
+      "name": "test_st_occupancy_map/descendingTrajectoryTimesRejected",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.005968
+    },
+    {
+      "name": "test_st_occupancy_map/nonfiniteTrajectoryRejected",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0139862
+    },
+    {
+      "name": "test_st_occupancy_map/unequalTrajectoryFieldLengthsRejected",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0119009
+    },
+    {
+      "name": "test_st_occupancy_map/invalidPlannerPathRejected",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0047667
+    },
+    {
+      "name": "test_st_occupancy_map/trajectoryTimeOutsideHorizonRejected",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.004504
+    },
+    {
+      "name": "test_st_occupancy_map/markingMapCopyDoesNotMutateOriginal",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0075697
+    },
+    {
+      "name": "test_st_occupancy_map/actualProjectConfigLoadsWithoutChangingDay4",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0594837
+    },
+    {
+      "name": "test_vehicle_dynamic/testStraightAcceleration",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.1139967
+    },
+    {
+      "name": "test_vehicle_dynamic/testStraightDeceleration",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0178074
+    },
+    {
+      "name": "test_vehicle_dynamic/testLeftTurn",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0020581
+    },
+    {
+      "name": "test_vehicle_dynamic/testRightTurn",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.011143
+    },
+    {
+      "name": "test_vehicle_dynamic/testZeroSteering",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0085977
+    },
+    {
+      "name": "test_vehicle_dynamic/testSpeedLimitViolation",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0116368
+    },
+    {
+      "name": "test_vehicle_dynamic/testSteeringLimitViolation",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.00763
+    },
+    {
+      "name": "test_vehicle_dynamic/testAccelerationLimitViolation",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0414416
+    },
+    {
+      "name": "test_vhybrid_core/testNodeContainsFiveDimensionalState",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0698077
+    },
+    {
+      "name": "test_vhybrid_core/testClosedSetPreservesTimeAndVelocity",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0048399
+    },
+    {
+      "name": "test_vhybrid_core/testExpansionSamplesConfiguredControls",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0213813
+    },
+    {
+      "name": "test_vhybrid_core/testExpansionUsesDifferentTimeIndices",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0105662
+    },
+    {
+      "name": "test_vhybrid_core/testCostContainsRequiredTerms",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0175754
+    },
+    {
+      "name": "test_vhybrid_core/testOpenSetReturnsMinimumCost",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0068005
+    },
+    {
+      "name": "test_vhybrid_core/testDemoReturnsPathOrExplicitFailure",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.076306
+    },
+    {
+      "name": "test_vhybrid_core/testOpenSetKeepsLowerCostForSameState",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0061015
+    },
+    {
+      "name": "test_vhybrid_core/testOpenSetCanBeReusedAfterRemovingLastNode",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0076839
+    },
+    {
+      "name": "test_vhybrid_core/testGoalConnectionEndsAtZeroSpeed",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.3043511
+    },
+    {
+      "name": "test_vhybrid_core/testStationaryVehicleAcceleratesBeforeMoving",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.2012589
+    },
+    {
+      "name": "test_vhybrid_core/testCurvedConnectionReachesGoalWithoutHeadingSnap",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.3875576
+    },
+    {
+      "name": "test_vhybrid_core/testConnectionWrapsHeadingContinuouslyAtPi",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.1960401
+    },
+    {
+      "name": "test_vhybrid_core/testInsufficientBrakingDistanceIsRejectedInNarrowLane",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0131015
+    },
+    {
+      "name": "test_vhybrid_core/testDemoFinalHeadingMeetsRequestedGoal",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.0788916
+    },
+    {
+      "name": "test_vhybrid_core/testDemoStartsFromRestAndAcceleratesPhysically",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.072677
+    },
+    {
+      "name": "test_vhybrid_core/testDemoEveryEdgeMatchesVehicleDynamics",
+      "passed": true,
+      "failed": false,
+      "duration_s": 0.86457549999999994
+    }
+  ],
+  "code_analysis": [
+    {
+      "file": "st_occupancy_map",
+      "messages": []
+    },
+    {
+      "file": "validate_st_occupancy_config",
+      "messages": []
+    },
+    {
+      "file": "inflate_vehicle_occupancy",
+      "messages": []
+    },
+    {
+      "file": "mark_static_obstacles",
+      "messages": []
+    },
+    {
+      "file": "mark_trajectory_occupancy",
+      "messages": []
+    },
+    {
+      "file": "query_occupancy",
+      "messages": []
+    },
+    {
+      "file": "plot_st_occupancy",
+      "messages": []
+    },
+    {
+      "file": "st_resource_index",
+      "messages": []
+    },
+    {
+      "file": "st_vehicle_cells",
+      "messages": []
+    },
+    {
+      "file": "st_write_occupancy",
+      "messages": []
+    },
+    {
+      "file": "st_polyline_distance",
+      "messages": []
+    }
+  ],
+  "demo": {
+    "figure_file": "F:\\study\\postgraduate\\联培\\路径规划论文\\代码\\辅助\\day 4\\MATLAB-9.11-45973bf338437f8ae7b9fe154fc587f714a4c0df\\outputs\\day5_st_occupancy.png",
+    "data_file": "F:\\study\\postgraduate\\联培\\路径规划论文\\代码\\辅助\\day 4\\MATLAB-9.11-45973bf338437f8ae7b9fe154fc587f714a4c0df\\outputs\\day5_st_occupancy.mat",
+    "vehicle_ids": [
+      "vehicle_002",
+      "vehicle_003"
+    ],
+    "trajectory_time_ranges_s": [
+      [
+        0,
+        10.760638982504577
+      ],
+      [
+        0,
+        18.163920552474391
+      ]
+    ],
+    "occupied_blocks": 180715,
+    "boundary_blocks": 176221,
+    "static_obstacle_blocks": 0,
+    "dynamic_blocks": 3369,
+    "multiple_owner_blocks": 1125,
+    "static_obstacle_count": 0,
+    "dynamic_avoidance_enabled": false,
+    "note": "Day5 占用接口示意：两条 Day4 独立规划轨迹允许存在冲突；静态区域使用保守全航向车辆参考点膨胀；不属于 Day6 顺序避碰结果。"
+  }
+}
