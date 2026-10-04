@@ -1,12 +1,12 @@
 {
   "schema_version": "day1.v1",
   "planner_name": "summon_v_hybrid_a_star_prototype",
-  "stage": "day5_spatiotemporal_resources",
+  "stage": "day6_sequential_dynamic_planning",
   "path_search_enabled": true,
   "trajectory_optimization_enabled": false,
   "controller_enabled": false,
-  "spatiotemporal_collision_check_enabled": false,
-  "priority_planning_enabled": false,
+  "spatiotemporal_collision_check_enabled": true,
+  "priority_planning_enabled": true,
   "search": {
     "xy_grid_resolution_m": 0.5,
     "yaw_grid_resolution_rad": 0.2617993878,
@@ -87,6 +87,21 @@
     "plotting": {"max_3d_points": 30000},
     "prototype_assumption": true,
     "todo": "时间范围、分辨率及额外裕度为原型配置；已有车辆0.2m安全裕度仍生效。release仅预留输入轨迹时段；Day6召集点停车应选择hold_until_t_max。"
+  },
+  "day6": {
+    "enabled": true,
+    "require_immediate_start": true,
+    "goal_hold_enabled": true,
+    "collision_sample_step_s": 0.05,
+    "collision_sample_step_m": 0.1,
+    "minimum_safety_distance_m": 0.0,
+    "animation_step_s": 0.2,
+    "animation_frame_rate": 10,
+    "max_conflict_examples": 10,
+    "search_heuristic_weight": 2.0,
+    "heuristic_method": "dubins",
+    "prototype_assumption": true,
+    "todo": "车辆已有前后侧0.2m裕度包含在矩形中；额外车间裕度和检测/动画步长均为原型配置。"
   },
   "reference_vehicle_model": "vehicle_config.json",
   "reference_map_model": "map_config.json",

@@ -1,5 +1,5 @@
 function [children, statistics] = vhybrid_expand_node(parent_node, map, ...
-    vehicle_config, planner_config, goal_state)
+    vehicle_config, planner_config, goal_state, st_map, higher_priority_trajectories)
 %VHYBRID_EXPAND_NODE 对节点采样加速度和转角并生成子节点。
 %
 % 输入：
@@ -10,8 +10,9 @@ function [children, statistics] = vhybrid_expand_node(parent_node, map, ...
 %   goal_state     - 真实目标状态 [x,y,theta,v,t]，用于启发代价。
 %
 % 输出：
-%   children       - 通过运动学和静态碰撞检查的子节点数组。
-%   statistics     - 采样总数、有效数、碰撞裁剪数。
+%   st_map/higher_priority_trajectories - 可选时空资源表与高优先级车辆。
+%   children       - 通过运动学、静态和连续时空碰撞检查的子节点数组。
+%   statistics     - 采样、裁剪、减速中间节点和按原因分类的统计。
 %
 % 算法逻辑：
 %   对每个节点组合 [-a_max,0,+a_max] 和 [-delta_max,0,+delta_max]。
@@ -20,6 +21,9 @@ function [children, statistics] = vhybrid_expand_node(parent_node, map, ...
 
 cfg = planner_config.vhybrid;
 dynamics = planner_config.dynamics;
+if nargin < 6, st_map = []; end
+if nargin < 7, higher_priority_trajectories = []; end
+has_context = ~isempty(st_map) || ~isempty(higher_priority_trajectories);
 if isfield(cfg, 'control_acceleration_samples_mps2')
     acceleration_values = double(cfg.control_acceleration_samples_mps2(:).');
 else
@@ -33,13 +37,26 @@ else
 end
 children = repmat(vhybrid_node(), 0, 1);
 statistics = struct('sampled', 0, 'valid', 0, 'collision_pruned', 0, ...
-    'constraint_pruned', 0);
+    'constraint_pruned', 0, 'dynamic_pruned',0,'resource_pruned',0, ...
+    'braking_midpoint_pruned',0,'faster_controls_skipped',0,'waiting_nodes',0,'horizon_pruned',0, ...
+    'reason_counts',struct(),'conflict_examples',{{}});
+% 同一转向按下一时刻速度由低到高扩展。减速中间节点不安全时，
+% 该转向更快的控制不再扩展；不同转向仍独立搜索。
+acceleration_values = sort(acceleration_values);
 
-for acceleration = acceleration_values
-    for steering_angle = steering_values
+for steering_angle = steering_values
+    for acceleration_id = 1:numel(acceleration_values)
+        acceleration = acceleration_values(acceleration_id);
         statistics.sampled = statistics.sampled + 1;
         current_state = [parent_node.x, parent_node.y, parent_node.theta, ...
             parent_node.v, parent_node.t];
+        if has_context && isfield(planner_config,'day6') && ...
+                planner_config.day6.require_immediate_start && ...
+                parent_node.parent_id == 0 && parent_node.v == 0 && acceleration <= 0
+            statistics.constraint_pruned = statistics.constraint_pruned + 1;
+            statistics = countReason(statistics,'initial_motion_required');
+            continue;
+        end
         [next_state, distance, ~, valid] = summon_vehicle_dynamic( ...
             current_state, steering_angle, acceleration, cfg.time_step_s, ...
             vehicle_config.dimensions_m.wheelbase, dynamics.v_max_mps, ...
@@ -47,11 +64,25 @@ for acceleration = acceleration_values
             vehicle_config.steering.maximum_steer_rad);
         if ~valid
             statistics.constraint_pruned = statistics.constraint_pruned + 1;
+            statistics = countReason(statistics,'kinematic_constraint');
+            continue;
+        end
+        if has_context && ~isempty(st_map) && next_state(5) >= st_map.t_max
+            statistics.horizon_pruned = statistics.horizon_pruned+1;
+            statistics.constraint_pruned = statistics.constraint_pruned+1;
+            statistics = countReason(statistics,'time_horizon_exhausted');
             continue;
         end
         % 中间状态沿真实圆弧积分，禁止用直线 xy/yaw 插值代替扫掠轨迹。
         sample_count = max(2,ceil(abs(distance)/cfg.collision_check_step_m));
+        if has_context
+            sample_count = max(sample_count,ceil(cfg.time_step_s / ...
+                planner_config.day6.collision_sample_step_s));
+            % 减速段额外插入检测节点，即使位移很短也不会只检查末端。
+            if acceleration < 0, sample_count = max(4,2*sample_count); end
+        end
         collision = false;
+        intermediate_collision = false;
         for sample_id = 1:sample_count
             ratio = sample_id/sample_count;
             [sample_state,~,~,sample_valid] = summon_vehicle_dynamic( ...
@@ -62,13 +93,50 @@ for acceleration = acceleration_values
             if ~sample_valid
                 collision = true; break;
             end
-            if summon_collision_check(sample_state(1:3),map,vehicle_config)
-                collision = true; break;
+            if day6_static_collision_check(sample_state(1:3),map,vehicle_config)
+                collision = true;
+                intermediate_collision = sample_id < sample_count;
+                break;
             end
         end
         if collision
             statistics.collision_pruned = statistics.collision_pruned + 1;
+            statistics = countReason(statistics,'static_collision');
+            if has_context && acceleration < 0 && intermediate_collision
+                statistics.braking_midpoint_pruned = statistics.braking_midpoint_pruned + 1;
+                statistics.faster_controls_skipped = statistics.faster_controls_skipped + ...
+                    numel(acceleration_values)-acceleration_id;
+                break;
+            end
             continue;
+        end
+
+        if has_context
+            motion = day6_motion_trajectory(current_state,next_state,steering_angle, ...
+                acceleration,vehicle_config,planner_config);
+            [collision,report] = check_trajectory_conflict(motion, ...
+                higher_priority_trajectories,vehicle_config,planner_config,st_map, ...
+                struct('collect_distance_samples',false));
+            if collision
+                statistics.collision_pruned = statistics.collision_pruned + 1;
+                % 保守动态资源冲突同样是动态拒绝；纯时空范围越界另行统计。
+                statistics.dynamic_pruned = statistics.dynamic_pruned + double( ...
+                    report.rectangle_collision || report.physical_collision || ...
+                    (report.resource_conflict && ~strcmp(report.reason,'outside_time_space_bounds')));
+                statistics.resource_pruned = statistics.resource_pruned + double(report.resource_conflict);
+                statistics = countReason(statistics,report.reason);
+                if numel(statistics.conflict_examples) < planner_config.day6.max_conflict_examples
+                    statistics.conflict_examples{end+1} = report;
+                end
+                if acceleration < 0 && isfield(report,'has_intermediate_conflict') && ...
+                        report.has_intermediate_conflict
+                    statistics.braking_midpoint_pruned = statistics.braking_midpoint_pruned + 1;
+                    statistics.faster_controls_skipped = statistics.faster_controls_skipped + ...
+                        numel(acceleration_values)-acceleration_id;
+                    break;
+                end
+                continue;
+            end
         end
 
         indices = discretizeState(next_state, map, cfg);
@@ -81,7 +149,17 @@ for acceleration = acceleration_values
         child.travelled_distance = distance;
         children(end+1,1) = child; %#ok<AGROW>
         statistics.valid = statistics.valid + 1;
+        if abs(distance) < 1e-12 && next_state(5) > current_state(5)
+            statistics.waiting_nodes = statistics.waiting_nodes + 1;
+        end
     end
+end
+
+function statistics = countReason(statistics,reason)
+%COUNTREASON 将冲突原因转换为合法字段，并统计每种拒绝的节点数。
+key = matlab.lang.makeValidName(char(reason));
+if ~isfield(statistics.reason_counts,key), statistics.reason_counts.(key) = 0; end
+statistics.reason_counts.(key) = statistics.reason_counts.(key)+1;
 end
 end
 

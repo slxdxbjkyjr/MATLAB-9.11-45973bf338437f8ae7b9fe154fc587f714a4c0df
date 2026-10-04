@@ -565,7 +565,15 @@ classdef test_st_occupancy_map < matlab.unittest.TestCase
             testCase.verifyGreaterThanOrEqual(ratio, 1);
             testCase.verifyTrue(occupied);
             testCase.verifyEqual(type, 'boundary');
-            testCase.verifyFalse(planner.priority_planning_enabled);
+            % Day6可开启顺序规划；公共占用接口不应绑定于旧Day5阶段开关。
+            testCase.verifyClass(planner.priority_planning_enabled, 'logical');
+            testCase.verifySize(planner.priority_planning_enabled, [1, 1]);
+            % Day6的搜索启发权重只注入Demo的内存副本，原Day4参数仍保持。
+            testCase.verifyFalse(isfield(planner.vhybrid,'heuristic_weight'));
+            testCase.verifyEqual(planner.vhybrid.time_step_s, 0.5);
+            testCase.verifyEqual(planner.vhybrid.time_grid_resolution_s, 0.5);
+            testCase.verifyEqual(planner.vhybrid.initial_speed_mps, 0);
+            testCase.verifyEqual(planner.vhybrid.terminal_speed_mps, 0);
         end
     end
 

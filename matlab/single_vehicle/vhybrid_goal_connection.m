@@ -1,5 +1,5 @@
 function [success, connection_nodes, statistics] = vhybrid_goal_connection( ...
-    parent_node, goal_state, map, vehicle_config, planner_config)
+    parent_node, goal_state, map, vehicle_config, planner_config, st_map, higher_priority_trajectories)
 %VHYBRID_GOAL_CONNECTION 用真实 Dubins 控制段和既有运动学连接终点。
 % 输入：父节点 [x,y,theta,v,t]、目标状态、静态地图和车辆/规划配置。
 % 输出：success、父节点之后的连接节点、候选/碰撞/约束裁剪统计。
@@ -9,10 +9,15 @@ function [success, connection_nodes, statistics] = vhybrid_goal_connection( ...
 
 cfg = planner_config.vhybrid;
 dyn = planner_config.dynamics;
+if nargin < 6, st_map = []; end
+if nargin < 7, higher_priority_trajectories = []; end
+has_context = ~isempty(st_map) || ~isempty(higher_priority_trajectories);
 success = false;
 connection_nodes = repmat(vhybrid_node(), 0, 1);
 statistics = struct('candidates', 0, 'collision_pruned', 0, ...
-    'constraint_pruned', 0, 'terminal_speed', NaN, 'connection_length_m', NaN);
+    'constraint_pruned', 0, 'terminal_speed', NaN, 'connection_length_m', NaN, ...
+    'dynamic_pruned',0,'resource_pruned',0,'reason_counts',struct(), ...
+    'conflict_examples',{{}},'geometric_candidates',0,'boundary_geometry_pruned',0);
 start = [parent_node.x,parent_node.y,parent_node.theta,parent_node.v,parent_node.t];
 goal_state = double(goal_state(:).');
 if hypot(start(1)-goal_state(1),start(2)-goal_state(2)) > cfg.goal_connection_distance_m
@@ -20,13 +25,24 @@ if hypot(start(1)-goal_state(1),start(2)-goal_state(2)) > cfg.goal_connection_di
 end
 delta_max = min(vehicle_config.steering.maximum_steer_rad, dyn.delta_max_rad);
 radius = vehicle_config.dimensions_m.wheelbase / tan(delta_max);
-curves = dubinsCandidates(start(1:3), goal_state(1:3), radius);
+curves = vhybrid_dubins_candidates(start(1:3), goal_state(1:3), radius);
 % 采样的是连接段巡航速度，终端速度始终为目标停车约束。
 speeds = unique([cfg.goal_connection_speed_samples_mps(:).', ...
     cfg.reference_speed_mps, start(4), cfg.terminal_speed_mps]);
 speeds = sort(speeds, 'descend');
 for curve_id = 1:numel(curves)
     curve = curves(curve_id);
+    statistics.geometric_candidates = statistics.geometric_candidates+1;
+    % 先用车身角点完整圆弧极值证明是否必定越界，再尝试速度相位。
+    % 这避免反复用不同速度积分同一条必不可行的几何曲线。
+    [outside,~] = vhybrid_curve_boundary_check(start,curve,radius,map,vehicle_config);
+    if outside
+        statistics.boundary_geometry_pruned = statistics.boundary_geometry_pruned+1;
+        key = 'analytic_boundary_collision';
+        if ~isfield(statistics.reason_counts,key), statistics.reason_counts.(key) = 0; end
+        statistics.reason_counts.(key) = statistics.reason_counts.(key)+1;
+        continue;
+    end
     for cruise_speed = speeds
         statistics.candidates = statistics.candidates + 1;
         [phases, feasible] = speedPhases(sum(curve.lengths),start(4), ...
@@ -45,6 +61,35 @@ for curve_id = 1:numel(curves)
             statistics.constraint_pruned = statistics.constraint_pruned + 1;
             continue;
         end
+        if has_context
+            % 终点解析连接与普通扩展接受同一个连续碰撞验收，不能绕过
+            % 资源块。动态冲突只拒绝当前速度，相同曲线仍可换速度重试。
+            trajectory = connectionTrajectory(parent_node,trial);
+            [collision,report] = check_trajectory_conflict(trajectory, ...
+                higher_priority_trajectories,vehicle_config,planner_config,st_map, ...
+                struct('collect_distance_samples',false));
+            if ~collision && ~isempty(higher_priority_trajectories) && ...
+                    isfield(planner_config,'day6') && planner_config.day6.goal_hold_enabled
+                hold_trajectory = goalHoldTrajectory(trajectory,st_map,planner_config);
+                [collision,report] = check_trajectory_conflict(hold_trajectory, ...
+                    higher_priority_trajectories,vehicle_config,planner_config,st_map, ...
+                    struct('collect_distance_samples',false));
+            end
+            if collision
+                statistics.collision_pruned = statistics.collision_pruned + 1;
+                statistics.dynamic_pruned = statistics.dynamic_pruned + double( ...
+                    report.rectangle_collision || report.physical_collision || ...
+                    (report.resource_conflict && ~strcmp(report.reason,'outside_time_space_bounds')));
+                statistics.resource_pruned = statistics.resource_pruned + double(report.resource_conflict);
+                key = matlab.lang.makeValidName(char(report.reason));
+                if ~isfield(statistics.reason_counts,key), statistics.reason_counts.(key) = 0; end
+                statistics.reason_counts.(key) = statistics.reason_counts.(key)+1;
+                if numel(statistics.conflict_examples) < planner_config.day6.max_conflict_examples
+                    statistics.conflict_examples{end+1} = report;
+                end
+                continue;
+            end
+        end
         connection_nodes = trial;
         statistics.terminal_speed = trial(end).v;
         statistics.connection_length_m = sum(curve.lengths);
@@ -52,61 +97,32 @@ for curve_id = 1:numel(curves)
         return;
     end
 end
+
+function trajectory = connectionTrajectory(parent,nodes)
+%CONNECTIONTRAJECTORY 将真实模型积分的连接节点转换为统一带控制轨迹。
+trajectory = struct('x',[parent.x;vertcat(nodes.x)], ...
+    'y',[parent.y;vertcat(nodes.y)],'theta',[parent.theta;vertcat(nodes.theta)], ...
+    'v',[parent.v;vertcat(nodes.v)],'t',[parent.t;vertcat(nodes.t)], ...
+    'acceleration',[0;vertcat(nodes.acceleration)], ...
+    'steering_angle',[0;vertcat(nodes.steering_angle)]);
 end
 
-function curves = dubinsCandidates(start, goal, radius)
-%DUBINSCANDIDATES 在单位半径坐标下求 LSL/RSR/LSR/RSL/RLR/LRL。
-% L/R 的长度是非负转角，S 是直线长度；乘 radius 后全部为弧长 m。
-d = hypot(goal(1)-start(1),goal(2)-start(2))/radius;
-bearing = atan2(goal(2)-start(2),goal(1)-start(1));
-alpha = mod(start(3)-bearing,2*pi); beta = mod(goal(3)-bearing,2*pi);
-sa = sin(alpha); sb = sin(beta); ca = cos(alpha); cb = cos(beta);
-cab = cos(alpha-beta);
-lengths = nan(6,3);
-types = [1,0,1; -1,0,-1; 1,0,-1; -1,0,1; -1,1,-1; 1,-1,1];
-p2 = 2+d*d-2*cab+2*d*(sa-sb);
-if p2 >= -1e-12
-    tmp = atan2(cb-ca,d+sa-sb);
-    lengths(1,:) = [mod(-alpha+tmp,2*pi),sqrt(max(0,p2)),mod(beta-tmp,2*pi)];
-end
-p2 = 2+d*d-2*cab+2*d*(sb-sa);
-if p2 >= -1e-12
-    tmp = atan2(ca-cb,d-sa+sb);
-    lengths(2,:) = [mod(alpha-tmp,2*pi),sqrt(max(0,p2)),mod(-beta+tmp,2*pi)];
-end
-p2 = -2+d*d+2*cab+2*d*(sa+sb);
-if p2 >= -1e-12
-    p = sqrt(max(0,p2));
-    tmp = atan2(-ca-cb,d+sa+sb)-atan2(-2,p);
-    lengths(3,:) = [mod(-alpha+tmp,2*pi),p,mod(-beta+tmp,2*pi)];
-end
-p2 = d*d-2+2*cab-2*d*(sa+sb);
-if p2 >= -1e-12
-    p = sqrt(max(0,p2));
-    tmp = atan2(ca+cb,d-sa-sb)-atan2(2,p);
-    lengths(4,:) = [mod(alpha-tmp,2*pi),p,mod(beta-tmp,2*pi)];
-end
-tmp = (6-d*d+2*cab+2*d*(sa-sb))/8;
-if abs(tmp) <= 1+1e-12
-    p = mod(2*pi-acos(max(-1,min(1,tmp))),2*pi);
-    t = mod(alpha-atan2(ca-cb,d-sa+sb)+p/2,2*pi);
-    lengths(5,:) = [t,p,mod(alpha-beta-t+p,2*pi)];
-end
-tmp = (6-d*d+2*cab+2*d*(-sa+sb))/8;
-if abs(tmp) <= 1+1e-12
-    p = mod(2*pi-acos(max(-1,min(1,tmp))),2*pi);
-    t = mod(-alpha-atan2(ca-cb,d+sa-sb)+p/2,2*pi);
-    lengths(6,:) = [t,p,mod(beta-alpha-t+p,2*pi)];
-end
-valid_ids = find(all(isfinite(lengths),2));
-[~,order] = sort(sum(lengths(valid_ids,:),2));
-curves = repmat(struct('lengths',zeros(1,3),'types',zeros(1,3)),numel(order),1);
-for k = 1:numel(order)
-    id = valid_ids(order(k));
-    curves(k).lengths = radius*lengths(id,:);
-    curves(k).types = types(id,:);
+function trajectory = goalHoldTrajectory(path,st_map,planner)
+%GOALHOLDTRAJECTORY 检查终点停车后直到地图末时间层的资源占用。
+if isempty(st_map), horizon = planner.st_occupancy.t_max;
+else, horizon = st_map.t_max; end
+last_time = horizon-max(1e-9,16*eps(horizon));
+trajectory = struct('x',path.x(end),'y',path.y(end),'theta',path.theta(end), ...
+    'v',path.v(end),'t',path.t(end),'acceleration',0,'steering_angle',0);
+if last_time > path.t(end)
+    trajectory.x(2,1) = path.x(end); trajectory.y(2,1) = path.y(end);
+    trajectory.theta(2,1) = path.theta(end); trajectory.v(2,1) = 0;
+    trajectory.t(2,1) = last_time;
+    trajectory.acceleration(2,1) = 0; trajectory.steering_angle(2,1) = 0;
 end
 end
+end
+
 
 function [phases, feasible] = speedPhases(distance, v0, vf, cap, dyn)
 %SPEEDPHASES 三角形/梯形速度剖面，用 v²-v0²=2*a*s 保证路程一致。
@@ -144,7 +160,10 @@ while segment <= 3 && phase <= size(phases,1)
         if segment <= 3, segment_remaining = curve.lengths(segment); end
         continue;
     end
-    if time_remaining <= 0
+    % 相位减法可留下机器精度的正残余；此时再积分会使t+dt==t。
+    % 仅跳过不可分辨的相位尾部，末速度仍由真实积分与末状态容差验收。
+    phase_time_tolerance = 64*eps(max(1,abs(state(5))+time_remaining));
+    if time_remaining <= phase_time_tolerance
         phase = phase+1;
         if phase <= size(phases,1), time_remaining = phases(phase,1); end
         continue;
@@ -168,10 +187,10 @@ while segment <= 3 && phase <= size(phases,1)
     [next,ds,~,valid] = summon_vehicle_dynamic(state,steering,acceleration,dt, ...
         vehicle.dimensions_m.wheelbase,dyn.v_max_mps,dyn.v_min_mps, ...
         dyn.a_min_mps2,dyn.a_max_mps2,delta_max);
-    if ~valid || ds <= 0
+    if ~valid || ds <= 0 || next(5) <= state(5)
         return;
     end
-    if summon_collision_check(next(1:3),map,vehicle)
+    if day6_static_collision_check(next(1:3),map,vehicle)
         reason = 'collision'; return;
     end
     [g,h] = vhybrid_cost(previous,next,goal,planner,ds,steering);

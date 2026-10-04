@@ -1,0 +1,539 @@
+{
+  "checked_at": "2026-10-04T19:11:30.5849863+08:00",
+  "target_root": "F:\\study\\postgraduate\\联培\\路径规划论文\\代码\\辅助\\day 4\\MATLAB-9.11-45973bf338437f8ae7b9fe154fc587f714a4c0df",
+  "backup_root": "C:\\Users\\lenovo\\Documents\\ChatGPT\\长安汽车路径规划\\day6_implementation\\target_backup_20261004_191130",
+  "deployed_count": 24,
+  "modified_existing_count": 6,
+  "added_count": 18,
+  "protected_count": 81,
+  "all_protected_unchanged": true,
+  "deployed_files": [
+    {
+      "path": "config\\planner_config.json",
+      "sha256": "C728C8603010E0504080D69563DA2280173D942593FBCE26CD10B2776B10B72B",
+      "existed": true
+    },
+    {
+      "path": "docs\\day6_dynamic_collision.md",
+      "sha256": "5D211700C5790B8D4512B33B59D9655688BE2C4B01523236BA087DEEFF23C4D1",
+      "existed": false
+    },
+    {
+      "path": "matlab\\single_vehicle\\check_trajectory_conflict.m",
+      "sha256": "AB2E462D5B557BD98B22B09B0E18A3429DE3B7D51D8AB276F62C6BF4D814A921",
+      "existed": false
+    },
+    {
+      "path": "matlab\\single_vehicle\\check_vehicle_vehicle_collision.m",
+      "sha256": "3221B36436DD5306A2A4280D9BD46DC909F3F27475377F68507DFF2EA9683677",
+      "existed": false
+    },
+    {
+      "path": "matlab\\single_vehicle\\day6_motion_trajectory.m",
+      "sha256": "397BFF668D87E345289D35A6AF2A0D1D011F26D3825D7DDC25B759AE08085FC1",
+      "existed": false
+    },
+    {
+      "path": "matlab\\single_vehicle\\day6_resource_blocks.m",
+      "sha256": "892476FCF962FDEC7B8AD9D4BEB2F561AD3C923A10AAA2C563FD2C490ADCF941",
+      "existed": false
+    },
+    {
+      "path": "matlab\\single_vehicle\\day6_static_collision_check.m",
+      "sha256": "C08BA5843F614F581CF351201D70DE251768C65EFBF0CCB2D66EA33A8087373E",
+      "existed": false
+    },
+    {
+      "path": "matlab\\single_vehicle\\day6_trajectory_states.m",
+      "sha256": "E6C503ADBC89E5E5F4348ADA1AC4B2B64E3E6969C4B1163A4FB18E370B7B0284",
+      "existed": false
+    },
+    {
+      "path": "matlab\\single_vehicle\\dynamic_vehicle_obstacle.m",
+      "sha256": "14E948B407402AA4DB6A9058D734AB17CC9340379893939C0751A08EB8AAEBB8",
+      "existed": false
+    },
+    {
+      "path": "matlab\\single_vehicle\\plot_day6_trajectories.m",
+      "sha256": "A2D69C84C3EED0F648F1B9AFF471D507A81C74631A6E801D0172C05688E6D674",
+      "existed": false
+    },
+    {
+      "path": "matlab\\single_vehicle\\predict_vehicle_pose.m",
+      "sha256": "CC5C49962376751F9EA72FB25614A6E4C3941EF11E6A80603DB6FBC121418305",
+      "existed": false
+    },
+    {
+      "path": "matlab\\single_vehicle\\prepare_dynamic_context.m",
+      "sha256": "408AB59BC4A3E7DCC7F99D359232C8B709B3D356C7AAFF027BB026ACEE397B06",
+      "existed": false
+    },
+    {
+      "path": "matlab\\single_vehicle\\run_day6_sequential_planning_demo.m",
+      "sha256": "FE25F09AEBDE19146C163996E6E43DA15EF27313E1527085E223D0CF24894665",
+      "existed": false
+    },
+    {
+      "path": "matlab\\single_vehicle\\run_vhybrid_astar_demo.m",
+      "sha256": "1285DEDA440C9B58B48074EBFFBEBF4129933E3CD0063FE6D3AEEB8C7801EF98",
+      "existed": true
+    },
+    {
+      "path": "matlab\\single_vehicle\\summon_vhybrid_astar.m",
+      "sha256": "C49D2F7B35B0408F641D1C97313A5F338AF19395AC78067BA44F69DA9269C13D",
+      "existed": false
+    },
+    {
+      "path": "matlab\\single_vehicle\\vhybrid_cost.m",
+      "sha256": "69E17AECC432D1F2307DB73C27E75BCA715C4E8232D1D223E92F61EEE3EB3FD0",
+      "existed": true
+    },
+    {
+      "path": "matlab\\single_vehicle\\vhybrid_curve_boundary_check.m",
+      "sha256": "F9E2DF281078B75967198C6185E460FF57F244D7A2D619253F3309AE08631EBE",
+      "existed": false
+    },
+    {
+      "path": "matlab\\single_vehicle\\vhybrid_dubins_candidates.m",
+      "sha256": "67BBE67BD1E468E9247D3A594925D37B3865C680A50D68C5491F1F8B4A6CD912",
+      "existed": false
+    },
+    {
+      "path": "matlab\\single_vehicle\\vhybrid_expand_node.m",
+      "sha256": "317139A7D211F95F053156801F6D09A01DF112DA3C85C283216CCB2B25D0FDD7",
+      "existed": true
+    },
+    {
+      "path": "matlab\\single_vehicle\\vhybrid_goal_connection.m",
+      "sha256": "F8BDDC8E93B66548BFECD103572DC6436E92E27B36E256D1A4F90674239CFD1C",
+      "existed": true
+    },
+    {
+      "path": "matlab\\single_vehicle\\vhybrid_heuristic.m",
+      "sha256": "2B10CD8FE320E41D7D52396DE7A3D6B5D53240D16FE4006C27F5C7700EBFB685",
+      "existed": false
+    },
+    {
+      "path": "tests\\test_dynamic_collision.m",
+      "sha256": "2F69B5737E6D9D0EB5FF88C1F02B3DCCBE3997397C6C15366B5970E422CA0443",
+      "existed": false
+    },
+    {
+      "path": "tests\\test_st_occupancy_map.m",
+      "sha256": "15F27B99158FBF23238A4F94F8423BADA36A0AE9C7A5FBDDAF624716EF79CFBE",
+      "existed": true
+    },
+    {
+      "path": "tests\\validate_day6_sequential.m",
+      "sha256": "87EFCE117D546AEFD71F76763681737680C2DCE782BAAD7058A7101AAD80E6F3",
+      "existed": false
+    }
+  ],
+  "protected_files": [
+    {
+      "path": "config\\map_config.json",
+      "unchanged": true,
+      "sha256": "0004C76190C6AC53F4BDC6E0C8DE7D66F1E4C6017D3C64BF0D25D962E7222519"
+    },
+    {
+      "path": "config\\planner_config.asv",
+      "unchanged": true,
+      "sha256": "33046BC4CFB5AC0F87243F4C735B4586EED500D2E085783700AEEC1BA392D130"
+    },
+    {
+      "path": "config\\scenario_001.json",
+      "unchanged": true,
+      "sha256": "C0AE3285754E80B4F538E0C20E69C823710D4F22ACA766F54563D32D6ACD4F81"
+    },
+    {
+      "path": "config\\vehicle_config.json",
+      "unchanged": true,
+      "sha256": "6AED335D0EC41A40C5429AAAF80376C255339DC90E34FE4D732886C534BD8173"
+    },
+    {
+      "path": "cpp\\README.md",
+      "unchanged": true,
+      "sha256": "68D10ABF6ED92AAA7016A31220A59561726E22250C309B29B545A5A29DCB6DB9"
+    },
+    {
+      "path": "docs\\day1_architecture.md",
+      "unchanged": true,
+      "sha256": "ED016765B489F5C8587E5E38312C6488D76B2473422E1F0230F41FDA8C8D3E56"
+    },
+    {
+      "path": "docs\\day2_single_vehicle.md",
+      "unchanged": true,
+      "sha256": "D88AD1A041E66212121A3524442D5ACFFD4156701F9A8FB2E7E2D25816A6CFC6"
+    },
+    {
+      "path": "docs\\day3_vehicle_dynamics.md",
+      "unchanged": true,
+      "sha256": "80C91D8FBDDF1DFD1F68B12018241F070C1FA6B1821D31E897D4FA316E7CD90A"
+    },
+    {
+      "path": "docs\\day4_vhybrid_astar.md",
+      "unchanged": true,
+      "sha256": "4F8F4AC5A90BB2239961DBD2B298129882D43BDF17A3A052E6FC9917438C083E"
+    },
+    {
+      "path": "docs\\day5_spatiotemporal_map.md",
+      "unchanged": true,
+      "sha256": "610391EF6DCC4D8AE4BF2C505A18583179DECED863670505143E3D567BF65DF6"
+    },
+    {
+      "path": "matlab\\README.md",
+      "unchanged": true,
+      "sha256": "4246D6690EF6D43FC1987C0C312A0185C4237A0C7B7228EA266A9D6648425356"
+    },
+    {
+      "path": "matlab\\single_vehicle\\inflate_vehicle_occupancy.m",
+      "unchanged": true,
+      "sha256": "CF46EFC531E533251E15467C3862F821EF35A379C3483AAED9314C81C9A05076"
+    },
+    {
+      "path": "matlab\\single_vehicle\\mark_static_obstacles.m",
+      "unchanged": true,
+      "sha256": "36C835DD9CDECDF198CF089309E4CB30524C5940853E0BE454F4F7ACE1DCDE04"
+    },
+    {
+      "path": "matlab\\single_vehicle\\mark_trajectory_occupancy.m",
+      "unchanged": true,
+      "sha256": "A653F4C70E05C1C07E65EA0E743350BAD3033D4CD20E1A1C8C6B90FAE07FAA8A"
+    },
+    {
+      "path": "matlab\\single_vehicle\\plot_st_occupancy.m",
+      "unchanged": true,
+      "sha256": "7F385D2C380F6376F6B00E34A29ADACC406E321944FBDEF7B9C220E5039ECC6D"
+    },
+    {
+      "path": "matlab\\single_vehicle\\query_occupancy.m",
+      "unchanged": true,
+      "sha256": "95F56DB2D38F4CE094FDAA2E653839B8595BAA470224941902CEAEF121EF5B09"
+    },
+    {
+      "path": "matlab\\single_vehicle\\run_single_vehicle_demo.m",
+      "unchanged": true,
+      "sha256": "C93C2AA82CDF75C4C2AC5A69E1DF1A6CFCAE053EDD6666808529CAABBBE85953"
+    },
+    {
+      "path": "matlab\\single_vehicle\\st_occupancy_map.m",
+      "unchanged": true,
+      "sha256": "D93DD0F84C5A496C0814D0464B467FE6B315EB67FE25CFDE35D980EB97A31D9C"
+    },
+    {
+      "path": "matlab\\single_vehicle\\st_polyline_distance.m",
+      "unchanged": true,
+      "sha256": "55019E1A45DC7581AF4378327BD62BCEACB10BCA296A717D495B0AFDCFB4DE93"
+    },
+    {
+      "path": "matlab\\single_vehicle\\st_resource_index.m",
+      "unchanged": true,
+      "sha256": "FD132C8A928C9349A0A857D9B57517D565530AAE144A331AC4292B9DEC97E5F1"
+    },
+    {
+      "path": "matlab\\single_vehicle\\st_vehicle_cells.m",
+      "unchanged": true,
+      "sha256": "7E2BEB54037215DA6940C7EAD9A0658170F67908D07DC4434D17ADF462A1A6CC"
+    },
+    {
+      "path": "matlab\\single_vehicle\\st_write_occupancy.m",
+      "unchanged": true,
+      "sha256": "CE905B2796E2C7CFD523FFFAA03782C59989211F434B7E38F9AC249FDC7B9301"
+    },
+    {
+      "path": "matlab\\single_vehicle\\summon_collision_check.m",
+      "unchanged": true,
+      "sha256": "1BEEB7876CA28DB3E9667F5EB98A89E0488B8DB15199DFC5807E7385268002B8"
+    },
+    {
+      "path": "matlab\\single_vehicle\\summon_goal_connection.m",
+      "unchanged": true,
+      "sha256": "A851B6D5B2F1F0D7F16CB5BC031165E0B072F90AF96A6985618A16DD6B3D9E5E"
+    },
+    {
+      "path": "matlab\\single_vehicle\\summon_hybrid_astar.m",
+      "unchanged": true,
+      "sha256": "BEF3D81738BDF1F85ACD362D2214FB00500C015D4B94F1A45457201A19AACD56"
+    },
+    {
+      "path": "matlab\\single_vehicle\\summon_map.m",
+      "unchanged": true,
+      "sha256": "4ACA875605D5C133D6F9D371C61B7CC9B74D0D36EED88B15CDB2E78106073901"
+    },
+    {
+      "path": "matlab\\single_vehicle\\summon_plot_path.m",
+      "unchanged": true,
+      "sha256": "178F7182EFC9B99BEE80770145CB8A97B17A403B09931CE71D25AE118B877A91"
+    },
+    {
+      "path": "matlab\\single_vehicle\\summon_vehicle_dynamic.m",
+      "unchanged": true,
+      "sha256": "4C9FB8F6E0D787F41E28FC66D75FA3D57CC83DECFECD47563419F6D1E675FC60"
+    },
+    {
+      "path": "matlab\\single_vehicle\\summon_vehicle_state.m",
+      "unchanged": true,
+      "sha256": "442EBDC9E6250B0CD762C96EEB52511B831105CD83CCBADDBC65B0768D370B6F"
+    },
+    {
+      "path": "matlab\\single_vehicle\\validate_st_occupancy_config.m",
+      "unchanged": true,
+      "sha256": "1009C3473E6F3BBC70E5C8CDBA6909C15091CA2C7E9C29974DFC2AB9136356E7"
+    },
+    {
+      "path": "matlab\\single_vehicle\\vhybrid_closed_set.m",
+      "unchanged": true,
+      "sha256": "325E79E63F5DF47116E0435DE31D486D3E2F8D0567B5286C052A8414CAE83B15"
+    },
+    {
+      "path": "matlab\\single_vehicle\\vhybrid_node.m",
+      "unchanged": true,
+      "sha256": "161BE5C0E586BF2B354CAC9BFA872333535AC040AA491E09DE863A5A64E65CA8"
+    },
+    {
+      "path": "matlab\\single_vehicle\\vhybrid_open_set.m",
+      "unchanged": true,
+      "sha256": "897ACC8E07BE3BC7F33032D537E2288649BF6F641F47025974ACD79AE3382204"
+    },
+    {
+      "path": "matlab\\single_vehicle\\vhybrid_validate_trajectory.m",
+      "unchanged": true,
+      "sha256": "2C50346677CF194F82ABDB7301E4B8BA6DA831E936E4AED710986451F8253672"
+    },
+    {
+      "path": "outputs\\day2_single_vehicle_001.mat",
+      "unchanged": true,
+      "sha256": "8753CD53D061DA9124504809DBB34F88B9A07A0A29AB6A9DE5D0619C49E97C2D"
+    },
+    {
+      "path": "outputs\\day2_single_vehicle_001.png",
+      "unchanged": true,
+      "sha256": "6E6E9E5E4086B7CFAA3F0AF194C06C6285584FE27CDB4C5BCDD6848E49B2DB78"
+    },
+    {
+      "path": "outputs\\day2_single_vehicle_002.mat",
+      "unchanged": true,
+      "sha256": "1D5D0317CE0B25F5A6792FF86115116E3B9B74A4435FEC33FE9EC83F17BD7F11"
+    },
+    {
+      "path": "outputs\\day2_single_vehicle_002.png",
+      "unchanged": true,
+      "sha256": "3D0F492FA5BE6F84165BC6EDC0491DE1B73C1AB82742B33D09C56F5850976C4F"
+    },
+    {
+      "path": "outputs\\day2_single_vehicle_003.mat",
+      "unchanged": true,
+      "sha256": "4AD1CA772F088FC3178DD31902EF271B0577AC3A11C7DABDE2DB739A33BD8AAA"
+    },
+    {
+      "path": "outputs\\day2_single_vehicle_003.png",
+      "unchanged": true,
+      "sha256": "3C9BB07AE4C9B929BB373CF813E8159C91E6B54835719E42E6A6D5519228F5EC"
+    },
+    {
+      "path": "outputs\\day2_single_vehicle.png",
+      "unchanged": true,
+      "sha256": "87000793F61608A89AAE7D27001B2405291012DD7502A913F00F1F5CF4BC18A1"
+    },
+    {
+      "path": "outputs\\day3_summon_path_vehicle_001.png",
+      "unchanged": true,
+      "sha256": "01CE54A15D1A63B6A5EC36F649620771974DFD4B33D83ED79D0A3BA7EEBCF618"
+    },
+    {
+      "path": "outputs\\day3_summon_path_vehicle_002.png",
+      "unchanged": true,
+      "sha256": "F83B6F96E620CC648D218A2FCCEADB1F300291479FC8B020507DA2ADDD7A2779"
+    },
+    {
+      "path": "outputs\\day3_summon_path_vehicle_003.png",
+      "unchanged": true,
+      "sha256": "1E589048E62E15C364A232683CF31B55D5BDDB2E7D2785B59D60F9B6E402CCDB"
+    },
+    {
+      "path": "outputs\\day3_summon_vehicle_001.mat",
+      "unchanged": true,
+      "sha256": "B5E6218380357118D059415BF8A28C08DFDBD73559167B1376A27CB117D24EE2"
+    },
+    {
+      "path": "outputs\\day3_summon_vehicle_002.mat",
+      "unchanged": true,
+      "sha256": "0D9DD87FE1E11854434E5FFF69D56315B1A06B71CE11E82AA12D4058C38F3CE2"
+    },
+    {
+      "path": "outputs\\day3_summon_vehicle_003.mat",
+      "unchanged": true,
+      "sha256": "8A31F1EFD4E7B4EC95E09A0D2A405ABB16628CE7B43C762E3E3636CCA5B607F5"
+    },
+    {
+      "path": "outputs\\day3_summon_vt_vehicle_001.png",
+      "unchanged": true,
+      "sha256": "C625B45EDCDB3ADAA9BF0E4118523CCB4A88A4A2E689DB74DEBA96EC41D231BB"
+    },
+    {
+      "path": "outputs\\day3_summon_vt_vehicle_002.png",
+      "unchanged": true,
+      "sha256": "BC529962933B6E7872B536E67D84B119AD1A7A548F44958E9419423CBAE10062"
+    },
+    {
+      "path": "outputs\\day3_summon_vt_vehicle_003.png",
+      "unchanged": true,
+      "sha256": "E5C8D38433D0924D245724094ADEAC3B4951093945BB4FCB996002CE598FF4B3"
+    },
+    {
+      "path": "outputs\\day3_vehicle_dynamic.png",
+      "unchanged": true,
+      "sha256": "A2F5A18AED5163431C4572D58450453E688385F70E89FBD572740AE33425F10C"
+    },
+    {
+      "path": "outputs\\day4_kinematics_validation.json",
+      "unchanged": true,
+      "sha256": "7D40F663FFC4755B71F6A835BEFEB229D39C7014B98B83DB7335880EB39B78A0"
+    },
+    {
+      "path": "outputs\\day4_vhybrid_astar.png",
+      "unchanged": true,
+      "sha256": "3C5465F9B8695CFF26F97DE5C64985E0E6BD21B27078A02F377388D37C18F8AF"
+    },
+    {
+      "path": "outputs\\day4_vhybrid_search.png",
+      "unchanged": true,
+      "sha256": "3D74A76DF8D198E8B9350CFAFD91E25A8C34841E91ED552E95ED408A660079B3"
+    },
+    {
+      "path": "outputs\\day4_vhybrid_speed_time.png",
+      "unchanged": true,
+      "sha256": "26F62DDB0A6953EE816D3026AA3C6BE3429C1DC05F9BFB5A143251C0F66AFA7E"
+    },
+    {
+      "path": "outputs\\day5_source_integrity.json",
+      "unchanged": true,
+      "sha256": "8E265A9FC6C7A12C717CFFC3E8E618B5AF93FFB341372547EB8D226E0576D0C8"
+    },
+    {
+      "path": "outputs\\day5_st_occupancy.mat",
+      "unchanged": true,
+      "sha256": "51231E7445C84E0BF2C6DC7A5298C5777503187DD842637A035D12A467FB1DA0"
+    },
+    {
+      "path": "outputs\\day5_st_occupancy.png",
+      "unchanged": true,
+      "sha256": "B31CB430C9B2F9257AC74EA545CAD3B43D5B01B3DDA1C2DB8CB5C4F70AD1939F"
+    },
+    {
+      "path": "outputs\\day5_validation.json",
+      "unchanged": true,
+      "sha256": "0ED53CCC0E48F7110CA00623CB66B4BDBFBA5BDB7F3B929DCC8892566587F473"
+    },
+    {
+      "path": "outputs\\scenario_001.svg",
+      "unchanged": true,
+      "sha256": "E430BF6C9F89B26B38D8FF7BB429C978F789497C2A2CE0AE027F246F6252E799"
+    },
+    {
+      "path": "outputs\\heading_validation\\after.log",
+      "unchanged": true,
+      "sha256": "CDA64DB7DAC6EC8B05B958C2AAFE347FDD4D32B13B15EBCB004EFE80F336F573"
+    },
+    {
+      "path": "outputs\\heading_validation\\after.mat",
+      "unchanged": true,
+      "sha256": "B2497C33D8E30448BCE763B2F5338B0DB6F5BC8DFEB16F59EDB855265E8F9139"
+    },
+    {
+      "path": "outputs\\heading_validation\\before.log",
+      "unchanged": true,
+      "sha256": "791DA48085E6E2046A264AF89201A1EEB3902BE9766FF1108B636C80196EE940"
+    },
+    {
+      "path": "outputs\\heading_validation\\before.mat",
+      "unchanged": true,
+      "sha256": "D6757461FC2515E63D28FE5B0CC7BE15C9BF437F640D704176BCD343E40282F7"
+    },
+    {
+      "path": "outputs\\heading_validation\\before.png",
+      "unchanged": true,
+      "sha256": "A969CC0EF1F75478C8628027198653A6D17BD8A43AB820E3F43D739966275231"
+    },
+    {
+      "path": "outputs\\heading_validation\\comparison.csv",
+      "unchanged": true,
+      "sha256": "86312E0E6EB53A4CA8D5F64F168631629E85660FA09DF5196226A47533CB9EC3"
+    },
+    {
+      "path": "outputs\\heading_validation\\comparison.png",
+      "unchanged": true,
+      "sha256": "2EA445EBC7F490904433726146A1B578C28F538E57C71C870E073B7F2D674FAD"
+    },
+    {
+      "path": "outputs\\heading_validation\\README.md",
+      "unchanged": true,
+      "sha256": "DB8EF96BB6D076A33A3AA6E8B693A6268FE468247AA6019244474391E0425218"
+    },
+    {
+      "path": "outputs\\heading_validation\\summon_hybrid_astar_before.m",
+      "unchanged": true,
+      "sha256": "B4F2747345E693C78531B823D0578C16BAEF53FFE92F2980F8E1C5D28C8E21B9"
+    },
+    {
+      "path": "outputs\\heading_validation\\validation.log",
+      "unchanged": true,
+      "sha256": "EA6E9694FBE6A5653E9CAF3771C57BF30EF65600FC3D3370B5EE4C04FCCC61C6"
+    },
+    {
+      "path": "tests\\check_day2_single_vehicle.ps1",
+      "unchanged": true,
+      "sha256": "9806B407BC82729E4C3C79B5D5834CBE8F07D4FF5FED92A1469AB759658CD43D"
+    },
+    {
+      "path": "tests\\check_scenario_001.ps1",
+      "unchanged": true,
+      "sha256": "2A81D424494BC0FA85B6066F7322245ADAE224E8ABA296AAE32F18DF211128A4"
+    },
+    {
+      "path": "tests\\generate_day3_summon_plot.m",
+      "unchanged": true,
+      "sha256": "851B79E5A93E0C6B3E6D59CABF8E659D9A05C5B97C78161A4C10FC0F10148D42"
+    },
+    {
+      "path": "tests\\generate_st_occupancy_plot.m",
+      "unchanged": true,
+      "sha256": "94EB408B0383C2BA5CF4B932EC5E2C58ECE0B7A1A9DC431D3DEB0E9333D140A2"
+    },
+    {
+      "path": "tests\\generate_vehicle_dynamic_plot.m",
+      "unchanged": true,
+      "sha256": "D05C1C443046CE741CFB6383259C1DA04BFB3E9A1E86C2577F792CD217585EE7"
+    },
+    {
+      "path": "tests\\generate_vhybrid_plot.m",
+      "unchanged": true,
+      "sha256": "F4BE8A8A01FBAC1689C0E73D03342896593CFC58B28D5F4DFA1CCD3A78347C9F"
+    },
+    {
+      "path": "tests\\test_vehicle_dynamic.m",
+      "unchanged": true,
+      "sha256": "94531ED982E57E59DF80DA7010F6E35A049BA3A5CDE09C48B5808FD7D334460E"
+    },
+    {
+      "path": "tests\\test_vhybrid_core.m",
+      "unchanged": true,
+      "sha256": "F6A660EB6C83D74CF7E5CF89FBBCDA7B196F6951FC497ACCA4FA67A152206CBC"
+    },
+    {
+      "path": "tests\\validate_day2_heading.m",
+      "unchanged": true,
+      "sha256": "FF0EBB1654D8B9F0705BD34760766C492B47ABC23B4BC23415AD5E7A344B0201"
+    },
+    {
+      "path": "tests\\validate_day4_kinematics.m",
+      "unchanged": true,
+      "sha256": "B71689F1814393A1EF6A0C4763388F63F67AD66149CDE0608CBB0A295583B807"
+    },
+    {
+      "path": "tests\\validate_day5_spatiotemporal.m",
+      "unchanged": true,
+      "sha256": "E1E9F70AA2CBC2A6F81ED4C4E0E016B893D1FDD5D1778DC4DCB6B15AD4BD0C18"
+    }
+  ]
+}
