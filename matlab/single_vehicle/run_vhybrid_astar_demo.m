@@ -1,7 +1,7 @@
 function path = run_vhybrid_astar_demo(vehicle_index, save_outputs)
 %RUN_VHYBRID_ASTAR_DEMO 运行 Day 4 单车 V-Hybrid A* 原型。
 %
-% 输入：vehicle_index 为场景车辆序号（默认 2）；save_outputs 是否保存图（默认 true）。
+% 输入：vehicle_index 为场景车辆序号（默认 3）；save_outputs 是否保存图（默认 true）。
 % 输出：path.x/y/theta/v/t/direction、valid、error_code 和搜索统计。
 %
 % 算法逻辑：
@@ -21,7 +21,8 @@ scenario = jsondecode(fileread(fullfile(config_dir, 'scenario_001.json')));
 map = summon_map(map_config);
 vehicle = scenario.vehicles(vehicle_index);
 start_state = [vehicle.start_pose.x_m, vehicle.start_pose.y_m, ...
-    vehicle.start_pose.yaw_rad, 0.5, 0];
+    vehicle.start_pose.yaw_rad, planner_config.vhybrid.initial_speed_mps, 0];
+% 起步速度集中配置为0；后续速度和位移均通过运动学模型受限加速生成。
 goal_state = [vehicle.summon_goal.x_m, vehicle.summon_goal.y_m, ...
     vehicle.summon_goal.yaw_rad, 0, 0];
 

@@ -42,13 +42,20 @@ classdef test_vhybrid_core < matlab.unittest.TestCase
             testCase.verifyFalse(closed.contains(node_b));
         end
 
-        function testExpansionSamplesNineControls(testCase)
-            parent = vhybrid_node([3,3,0,0.5,0],0,0,0,0,0,[6,6,12,2,0],1);
+        function testExpansionSamplesConfiguredControls(testCase)
+            % 零速父节点须采样所有配置控制，并能生成低速加速节点。
+            parent = vhybrid_node([3,3,0,0,0],0,0,0,0,0,[6,6,12,0,0],1);
             [children, statistics] = vhybrid_expand_node(parent, testCase.Map, ...
                 testCase.VehicleConfig, testCase.PlannerConfig, [24,5,0,0,0]);
-            testCase.verifyEqual(statistics.sampled, 9);
+            cfg = testCase.PlannerConfig.vhybrid;
+            expected_controls = numel(cfg.control_acceleration_samples_mps2) ...
+                * numel(cfg.control_steering_samples_rad);
+            testCase.verifyEqual(statistics.sampled, expected_controls);
             testCase.verifyGreaterThan(statistics.valid, 0);
             testCase.verifyGreaterThanOrEqual(numel(children), 3);
+            testCase.verifyTrue(any(abs([children.v]-0.5)<1e-12));
+            testCase.verifyTrue(any(abs([children.v]-1.0)<1e-12));
+            testCase.verifyGreaterThanOrEqual(min([children.v]), 0);
         end
 
         function testExpansionUsesDifferentTimeIndices(testCase)
@@ -188,6 +195,27 @@ classdef test_vhybrid_core < matlab.unittest.TestCase
             testCase.verifyLessThanOrEqual(path.final_speed_error_mps, 1e-8);
             testCase.verifyEqual(path.v(end), 0, 'AbsTol', 1e-8);
             testCase.verifyTrue(path.kinematic_validation.valid);
+        end
+
+        function testDemoStartsFromRestAndAcceleratesPhysically(testCase)
+            % 起点必须真实静止，首个移动状态须由正加速度和原运动学模型产生。
+            path = testCase.cachedDemo();
+            testCase.assertTrue(path.valid);
+            testCase.verifyEqual(testCase.PlannerConfig.vhybrid.initial_speed_mps, ...
+                0, 'AbsTol', 1e-12);
+            testCase.verifyEqual(path.v(1), 0, 'AbsTol', 1e-12);
+            testCase.verifyEqual(path.t(1), 0, 'AbsTol', 1e-12);
+            moving = find(path.travelled_distance > 1e-10, 1, 'first');
+            testCase.assertNotEmpty(moving);
+            testCase.assertGreaterThan(moving, 1);
+            testCase.verifyGreaterThan(path.acceleration(moving), 0);
+            testCase.verifyGreaterThan(path.v(moving), 0);
+            previous = [path.x(moving-1),path.y(moving-1),path.theta(moving-1), ...
+                path.v(moving-1),path.t(moving-1)];
+            actual = [path.x(moving),path.y(moving),path.theta(moving), ...
+                path.v(moving),path.t(moving)];
+            testCase.verifyEdge(previous,actual,path.acceleration(moving), ...
+                path.steering_angle(moving),path.travelled_distance(moving),testCase.Map);
         end
 
         function testDemoEveryEdgeMatchesVehicleDynamics(testCase)
