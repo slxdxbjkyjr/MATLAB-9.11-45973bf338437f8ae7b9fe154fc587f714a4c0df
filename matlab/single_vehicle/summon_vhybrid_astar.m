@@ -1,24 +1,34 @@
-function path = summon_vhybrid_astar(start_state,goal_state,map,vehicle_config,planner_config,st_map,higher_priority_trajectories)
+function path = summon_vhybrid_astar(start_state,goal_state,map,vehicle_config,planner_config,st_map,higher_priority_trajectories,options)
 %SUMMON_VHYBRID_ASTAR 单车/顺序多车共用的五维 V-Hybrid A* 搜索器。
 % 输入：起终点[x,y,theta,v,t]、静态地图、集中配置；可选时空地图及高优先级车辆。
 % 输出：路径、搜索节点、运动学/动态验收和明确的失败原因。
-% 状态按x/y/theta/v/t查重。控制由既有Day3模型积分；所有运动段在加入
+% options.initial_gear 可选覆盖配置初挡位。v 始终为非负速度大小。
+% 状态按x/y/theta/v/t/gear查重。控制由Day3挡位适配模型积分；所有运动段在加入
 % Open之前接受静态与动态碰撞验收。无动态参数时保持Day4单车接口行为。
 if nargin < 6, st_map = []; end
 if nargin < 7, higher_priority_trajectories = []; end
+if nargin < 8, options = struct(); end
+cfg = planner_config.vhybrid;
+initial_gear = 1;
+if isfield(cfg,'initial_gear'), initial_gear = cfg.initial_gear; end
+if isfield(options,'initial_gear'), initial_gear = options.initial_gear; end
 start_state = double(start_state(:).'); goal_state = double(goal_state(:).');
 has_context = ~isempty(st_map) || ~isempty(higher_priority_trajectories);
 if has_context, validate_st_occupancy_config(planner_config); end
 path = emptyPath();
 if numel(start_state) ~= 5 || numel(goal_state) ~= 5 || ...
         any(~isfinite([start_state,goal_state])) || start_state(4) < planner_config.dynamics.v_min_mps || ...
-        start_state(4) > planner_config.dynamics.v_max_mps
+        start_state(4) > planner_config.dynamics.v_max_mps || ...
+        ~isscalar(initial_gear) || ~ismember(initial_gear,[-1,1]) || ...
+        (initial_gear<0 && (~isfield(cfg,'reverse_enabled') || ~cfg.reverse_enabled)) || ...
+        (initial_gear<0 && isfield(cfg,'max_reverse_speed_mps') && start_state(4)>cfg.max_reverse_speed_mps)
     path.error_code = uint8(1);
     path.failure_diagnostics = failureDiagnostics(path,planner_config);
     return;
 end
 path.goal_pose = goal_state(1:3);
 timer_id = tic;
+map = prepare_static_context(map,vehicle_config);
 stats = initStats();
 [start_collision, ~] = day6_static_collision_check(start_state(1:3), map, vehicle_config);
 [goal_collision, ~] = day6_static_collision_check(goal_state(1:3), map, vehicle_config);
@@ -45,10 +55,9 @@ if has_context
         return;
     end
 end
-cfg = planner_config.vhybrid;
 start_indices = discretizeState(start_state, map, cfg);
 start_node = vhybrid_node(start_state, 0, 0, 0, 0, ...
-    goalHeuristic(start_state, goal_state, cfg), start_indices, 1);
+    goalHeuristic(start_state, goal_state, cfg), start_indices, 1,initial_gear,false);
 open_set = vhybrid_open_set();
 closed_set = vhybrid_closed_set();
 open_set.push(start_node);
@@ -178,36 +187,44 @@ indices = indices(count:-1:1);
 path = emptyPath();
 first = nodes(indices(1));
 states = [first.x,first.y,first.theta,first.v,first.t];
-controls = [0,0,0]; % 每行 [加速度, 前轮转角, 从上一个点到本点的弧长]
-dyn = planner.dynamics; cfg = planner.vhybrid;
+controls = [0,0,0,first.gear,0]; % 每行 [a,delta,带方向弧长,gear,换挡标记]
+cfg = planner.vhybrid;
 for k = 2:numel(indices)
     parent = nodes(indices(k-1)); child = nodes(indices(k));
     start = [parent.x,parent.y,parent.theta,parent.v,parent.t];
     duration = child.t-parent.t;
     n = max([1,ceil(duration/cfg.path_sample_step_s), ...
         ceil(abs(child.travelled_distance)/cfg.collision_check_step_m)]);
+    % 完整换挡驻留边保持为一个时间段，不能细分后误认为只等待0.1s。
+    if child.is_gear_change, n = 1; end
+    previous_distance = 0;
     for j = 1:n
         dt = duration*j/n;
-        [state,~,~,valid] = summon_vehicle_dynamic(start,child.steering_angle, ...
-            child.acceleration,dt,vehicle.dimensions_m.wheelbase, ...
-            dyn.v_max_mps,dyn.v_min_mps,dyn.a_min_mps2,dyn.a_max_mps2, ...
-            min(vehicle.steering.maximum_steer_rad,dyn.delta_max_rad));
+        [state,cumulative_distance,~,valid] = summon_vehicle_dynamic_gear(start,child.steering_angle, ...
+            child.acceleration,dt,vehicle,planner,child.gear);
         if ~valid
             path.error_code = uint8(8); return;
         end
-        previous = states(end,:);
-        ds = 0.5*(previous(4)+state(4))*(state(5)-previous(5));
+        % 直接取原模型累计弧长之差，倒车距离自然为负；与有效恒加速度
+        % 段的梯形速度积分等价。原模型拒绝跨零/超速控制，不进行速度截断。
+        ds = cumulative_distance-previous_distance;
+        previous_distance = cumulative_distance;
         states(end+1,:) = state; %#ok<AGROW>
-        controls(end+1,:) = [child.acceleration,child.steering_angle,ds]; %#ok<AGROW>
+        controls(end+1,:) = [child.acceleration,child.steering_angle,ds, ...
+            child.gear,double(child.is_gear_change)]; %#ok<AGROW>
     end
 end
 path.x = states(:,1); path.y = states(:,2); path.theta = states(:,3);
 path.v = states(:,4); path.t = states(:,5);
 path.acceleration = controls(:,1); path.steering_angle = controls(:,2);
 path.travelled_distance = controls(:,3); path.direction = sign(controls(:,3));
+path.gear = controls(:,4); path.is_gear_change = logical(controls(:,5));
 path.valid = true;
 path.error_code = uint8(0);
 stats.path_nodes = size(states,1);
+stats.path_reverse_distance_m = sum(abs(path.travelled_distance(path.direction<0)));
+stats.path_gear_switches = nnz(path.is_gear_change);
+stats.path_gear_wait_time_s = sum(diff(path.t).*double(path.is_gear_change(2:end)));
 path.search_statistics = finishStats(stats, timer_id);
 end
 
@@ -243,6 +260,7 @@ function path = emptyPath()
 %EMPTYPATH 初始化 V-Hybrid A* 统一路径输出。
 path = struct('x',zeros(0,1),'y',zeros(0,1),'theta',zeros(0,1), ...
     'v',zeros(0,1),'t',zeros(0,1),'direction',zeros(0,1), ...
+    'gear',zeros(0,1),'is_gear_change',false(0,1), ...
     'valid',false,'error_code',uint8(0),'search_nodes',repmat(vhybrid_node(),0,1), ...
     'search_statistics',initStats(),'goal_pose',zeros(1,3), ...
     'final_position_error_m',NaN,'final_heading_error_rad',NaN, ...
@@ -286,7 +304,9 @@ stats = struct('expanded_nodes',0,'generated_nodes',0,'sampled_controls',0, ...
     'goal_connection_geometric_candidates',0,'goal_connection_boundary_pruned',0, ...
     'open_peak',0,'path_nodes',0,'elapsed_sec',0,'dynamic_pruned',0, ...
     'resource_pruned',0,'braking_midpoint_pruned',0,'faster_controls_skipped',0, ...
-    'waiting_nodes',0,'horizon_pruned',0,'reason_counts',struct(),'conflict_examples',{{}});
+    'waiting_nodes',0,'horizon_pruned',0,'reason_counts',struct(),'conflict_examples',{{}}, ...
+    'reverse_nodes',0,'gear_switch_nodes',0,'gear_switch_pruned',0, ...
+    'path_reverse_distance_m',0,'path_gear_switches',0,'path_gear_wait_time_s',0);
 end
 
 function stats = finishStats(stats, timer_id)
@@ -303,7 +323,8 @@ end
 function stats = mergeDynamicStats(stats,part,planner)
 %MERGEDYNAMICSTATS 汇总扩展段和终点连接的分类裁剪、冲突实例与等待节点。
 names = {'dynamic_pruned','resource_pruned','braking_midpoint_pruned', ...
-    'faster_controls_skipped','waiting_nodes','horizon_pruned'};
+    'faster_controls_skipped','waiting_nodes','horizon_pruned', ...
+    'reverse_nodes','gear_switch_nodes','gear_switch_pruned'};
 for k = 1:numel(names)
     if isfield(part,names{k}), stats.(names{k}) = stats.(names{k})+part.(names{k}); end
 end
@@ -331,7 +352,8 @@ if ~collision && ~isempty(higher) && planner.day6.goal_hold_enabled
     hold = struct('x',[path.x(end);path.x(end)],'y',[path.y(end);path.y(end)], ...
         'theta',[path.theta(end);path.theta(end)],'v',[0;0], ...
         't',[path.t(end);horizon-max(1e-9,16*eps(horizon))], ...
-        'acceleration',[0;0],'steering_angle',[0;0]);
+        'acceleration',[0;0],'steering_angle',[0;0], ...
+        'gear',[path.gear(end);path.gear(end)],'is_gear_change',[false;false]);
     if hold.t(2)>hold.t(1)
         [held_collision,held_report] = check_trajectory_conflict(hold,higher,vehicle,planner,st_map);
         if held_collision, collision = true; report = held_report;

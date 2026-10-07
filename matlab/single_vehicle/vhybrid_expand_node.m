@@ -15,15 +15,18 @@ function [children, statistics] = vhybrid_expand_node(parent_node, map, ...
 %   statistics     - 采样、裁剪、减速中间节点和按原因分类的统计。
 %
 % 算法逻辑：
-%   对每个节点组合 [-a_max,0,+a_max] 和 [-delta_max,0,+delta_max]。
-%   每个组合调用第 3 天 summon_vehicle_dynamic，使用时间步长推进状态，
-%   再调用 summon_collision_check。离散索引包含 x/y/yaw/v/time 五维。
+%   按配置组合加速度和转角；v 表示速度大小，gear 表示运动方向。
+%   使用 summon_vehicle_dynamic_gear 适配 Day3 模型进行有符号圆弧积分。
+%   仅在停稳后生成固定姿态的换挡驻留边，查重额外保留挡位。
 
 cfg = planner_config.vhybrid;
 dynamics = planner_config.dynamics;
 if nargin < 6, st_map = []; end
 if nargin < 7, higher_priority_trajectories = []; end
 has_context = ~isempty(st_map) || ~isempty(higher_priority_trajectories);
+gear = 1;
+if isfield(parent_node,'gear'), gear = parent_node.gear; end
+reverse_enabled = isfield(cfg,'reverse_enabled') && cfg.reverse_enabled;
 if isfield(cfg, 'control_acceleration_samples_mps2')
     acceleration_values = double(cfg.control_acceleration_samples_mps2(:).');
 else
@@ -39,7 +42,8 @@ children = repmat(vhybrid_node(), 0, 1);
 statistics = struct('sampled', 0, 'valid', 0, 'collision_pruned', 0, ...
     'constraint_pruned', 0, 'dynamic_pruned',0,'resource_pruned',0, ...
     'braking_midpoint_pruned',0,'faster_controls_skipped',0,'waiting_nodes',0,'horizon_pruned',0, ...
-    'reason_counts',struct(),'conflict_examples',{{}});
+    'reason_counts',struct(),'conflict_examples',{{}}, ...
+    'reverse_nodes',0,'gear_switch_nodes',0,'gear_switch_pruned',0);
 % 同一转向按下一时刻速度由低到高扩展。减速中间节点不安全时，
 % 该转向更快的控制不再扩展；不同转向仍独立搜索。
 acceleration_values = sort(acceleration_values);
@@ -57,11 +61,9 @@ for steering_angle = steering_values
             statistics = countReason(statistics,'initial_motion_required');
             continue;
         end
-        [next_state, distance, ~, valid] = summon_vehicle_dynamic( ...
-            current_state, steering_angle, acceleration, cfg.time_step_s, ...
-            vehicle_config.dimensions_m.wheelbase, dynamics.v_max_mps, ...
-            dynamics.v_min_mps, dynamics.a_min_mps2, dynamics.a_max_mps2, ...
-            vehicle_config.steering.maximum_steer_rad);
+        [next_state, distance, ~, valid] = summon_vehicle_dynamic_gear( ...
+            current_state,steering_angle,acceleration,cfg.time_step_s, ...
+            vehicle_config,planner_config,gear);
         if ~valid
             statistics.constraint_pruned = statistics.constraint_pruned + 1;
             statistics = countReason(statistics,'kinematic_constraint');
@@ -83,16 +85,20 @@ for steering_angle = steering_values
         end
         collision = false;
         intermediate_collision = false;
+        if has_context
+            % 保存同一控制已经积分并接受的静态样本，动态检测可按同时间复用。
+            static_states = zeros(sample_count+1,5);
+            static_states(1,:) = current_state;
+        end
         for sample_id = 1:sample_count
             ratio = sample_id/sample_count;
-            [sample_state,~,~,sample_valid] = summon_vehicle_dynamic( ...
+            [sample_state,~,~,sample_valid] = summon_vehicle_dynamic_gear( ...
                 current_state,steering_angle,acceleration,cfg.time_step_s*ratio, ...
-                vehicle_config.dimensions_m.wheelbase,dynamics.v_max_mps, ...
-                dynamics.v_min_mps,dynamics.a_min_mps2,dynamics.a_max_mps2, ...
-                vehicle_config.steering.maximum_steer_rad);
+                vehicle_config,planner_config,gear);
             if ~sample_valid
                 collision = true; break;
             end
+            if has_context, static_states(sample_id+1,:) = sample_state; end
             if day6_static_collision_check(sample_state(1:3),map,vehicle_config)
                 collision = true;
                 intermediate_collision = sample_id < sample_count;
@@ -113,7 +119,7 @@ for steering_angle = steering_values
 
         if has_context
             motion = day6_motion_trajectory(current_state,next_state,steering_angle, ...
-                acceleration,vehicle_config,planner_config);
+                acceleration,vehicle_config,planner_config,gear,static_states);
             [collision,report] = check_trajectory_conflict(motion, ...
                 higher_priority_trajectories,vehicle_config,planner_config,st_map, ...
                 struct('collect_distance_samples',false));
@@ -142,16 +148,65 @@ for steering_angle = steering_values
         indices = discretizeState(next_state, map, cfg);
         [g_cost, h_cost, ~, ~] = vhybrid_cost(parent_node, next_state, ...
             goal_state, ...
-            planner_config, distance, steering_angle);
+            planner_config, distance, steering_angle,gear,false);
         child = vhybrid_node(next_state, acceleration, steering_angle, ...
-            parent_node.node_id, g_cost, h_cost, indices, 0);
+            parent_node.node_id, g_cost, h_cost, indices, 0,gear,false);
         child.direction = sign(distance);
         child.travelled_distance = distance;
         children(end+1,1) = child; %#ok<AGROW>
         statistics.valid = statistics.valid + 1;
+        statistics.reverse_nodes = statistics.reverse_nodes + double(gear<0 && abs(distance)>1e-12);
         if abs(distance) < 1e-12 && next_state(5) > current_state(5)
             statistics.waiting_nodes = statistics.waiting_nodes + 1;
         end
+    end
+end
+
+% 换挡必须由静止节点出发。它是完整的占用时间段，不是直接修改运动方向。
+% Day6 要求两车立即从 t=0 起步，因此根节点不能以换挡驻留代替起步。
+initial_must_move = has_context && isfield(planner_config,'day6') && ...
+    planner_config.day6.require_immediate_start && parent_node.parent_id==0;
+if reverse_enabled && parent_node.v==0 && ~initial_must_move
+    if ~isfield(dynamics,'direction_change_time_s') || ...
+            ~isscalar(dynamics.direction_change_time_s) || ...
+            ~isfinite(dynamics.direction_change_time_s) || dynamics.direction_change_time_s<=0
+        error('VHybrid:InvalidGearChangeTime','换挡等待时间必须集中配置为正有限秒数。');
+    end
+    statistics.sampled = statistics.sampled+1;
+    current = [parent_node.x,parent_node.y,parent_node.theta,0,parent_node.t];
+    next = current; next(5) = current(5)+dynamics.direction_change_time_s;
+    blocked = day6_static_collision_check(current(1:3),map,vehicle_config);
+    reason = 'static_collision';
+    if ~isempty(st_map) && next(5)>=st_map.t_max
+        blocked = true; reason = 'time_horizon_exhausted';
+        statistics.horizon_pruned = statistics.horizon_pruned+1;
+    end
+    if ~blocked && has_context
+        dwell = struct('x',[current(1);next(1)],'y',[current(2);next(2)], ...
+            'theta',[current(3);next(3)],'v',[0;0],'t',[current(5);next(5)], ...
+            'acceleration',[0;0],'steering_angle',[0;0], ...
+            'gear',[gear;-gear],'is_gear_change',[false;true]);
+        [blocked,report] = check_trajectory_conflict(dwell,higher_priority_trajectories, ...
+            vehicle_config,planner_config,st_map,struct('collect_distance_samples',false));
+        if blocked
+            reason = report.reason;
+            statistics.dynamic_pruned = statistics.dynamic_pruned+double( ...
+                report.rectangle_collision || report.physical_collision || report.resource_conflict);
+            statistics.resource_pruned = statistics.resource_pruned+double(report.resource_conflict);
+        end
+    end
+    if blocked
+        statistics.gear_switch_pruned = statistics.gear_switch_pruned+1;
+        statistics.collision_pruned = statistics.collision_pruned+1;
+        statistics = countReason(statistics,reason);
+    else
+        indices = discretizeState(next,map,cfg);
+        [g,h] = vhybrid_cost(parent_node,next,goal_state,planner_config,0,0,-gear,true);
+        child = vhybrid_node(next,0,0,parent_node.node_id,g,h,indices,0,-gear,true);
+        children(end+1,1) = child;
+        statistics.valid = statistics.valid+1;
+        statistics.gear_switch_nodes = statistics.gear_switch_nodes+1;
+        statistics.waiting_nodes = statistics.waiting_nodes+1;
     end
 end
 

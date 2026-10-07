@@ -720,6 +720,10 @@ classdef test_dynamic_collision < matlab.unittest.TestCase
             % 复用工程全部字段，测试仅缩短时域和控制集，不修改配置文件。
             root = fileparts(fileparts(mfilename('fullpath')));
             planner = jsondecode(fileread(fullfile(root, 'config', 'planner_config.json')));
+            % 历史Day6用例固定为原前进/三转角控制，新增倒车由独立套件验收。
+            planner.vhybrid.reverse_enabled = false;
+            planner.vhybrid.control_steering_samples_rad = ...
+                [-planner.dynamics.delta_max_rad,0,planner.dynamics.delta_max_rad];
             planner.st_occupancy.x_min = 0;
             planner.st_occupancy.x_max = 30;
             planner.st_occupancy.y_min = 0;

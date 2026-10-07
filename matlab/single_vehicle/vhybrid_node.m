@@ -1,5 +1,5 @@
 function node = vhybrid_node(state, acceleration, steering_angle, parent_id, ...
-    g_cost, h_cost, indices, node_id)
+    g_cost, h_cost, indices, node_id, gear, is_gear_change)
 %VHYBRID_NODE 构造带速度和时间的 V-Hybrid A* 节点。
 %
 % 输入：
@@ -10,6 +10,8 @@ function node = vhybrid_node(state, acceleration, steering_angle, parent_id, ...
 %   g_cost/h_cost  - 累积代价和启发代价。
 %   indices        - [x_index,y_index,yaw_index,velocity_index,time_index]。
 %   node_id        - 当前节点编号。
+%   gear           - 可选挡位，+1 前进、-1 倒车；v 始终为非负速度大小。
+%   is_gear_change - 可选换挡驻留标记，驻留期间车身位姿和速度保持不变。
 %
 % 输出：
 %   node           - 固定字段节点结构体，包含连续状态、离散索引、控制量、
@@ -28,6 +30,11 @@ if nargin == 0
     h_cost = 0;
     indices = zeros(1,5);
     node_id = 0;
+end
+if nargin < 9, gear = 1; end
+if nargin < 10, is_gear_change = false; end
+if ~isscalar(gear) || ~ismember(gear,[-1,1])
+    error('VHybrid:InvalidGear','挡位必须为 +1 或 -1。');
 end
 
 state = double(state(:).');
@@ -54,6 +61,8 @@ node = struct( ...
     'yaw_index', indices(3), ...
     'velocity_index', indices(4), ...
     'time_index', indices(5), ...
+    'gear', double(gear), ...
+    'is_gear_change', logical(is_gear_change), ...
     'direction', 0, ...
     'travelled_distance', 0);
 end

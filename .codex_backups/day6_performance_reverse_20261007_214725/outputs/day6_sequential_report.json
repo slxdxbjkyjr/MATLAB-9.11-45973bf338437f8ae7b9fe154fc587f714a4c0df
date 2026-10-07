@@ -1,0 +1,535 @@
+{
+  "valid": true,
+  "stage": "day6_sequential_planning",
+  "high_priority_id": "vehicle_002",
+  "low_priority_id": "vehicle_003",
+  "high_priority_path": {
+    "valid": true,
+    "error_code": 0,
+    "search_statistics": {
+      "expanded_nodes": 8,
+      "generated_nodes": 99,
+      "sampled_controls": 105,
+      "collision_pruned_nodes": 0,
+      "constraint_pruned_nodes": 6,
+      "closed_pruned_nodes": 0,
+      "goal_connection_candidates": 1,
+      "goal_connection_collision_pruned": 0,
+      "goal_connection_geometric_candidates": 1,
+      "goal_connection_boundary_pruned": 0,
+      "open_peak": 74,
+      "path_nodes": 230,
+      "elapsed_sec": 0.1272822,
+      "dynamic_pruned": 0,
+      "resource_pruned": 0,
+      "braking_midpoint_pruned": 0,
+      "faster_controls_skipped": 0,
+      "waiting_nodes": 3,
+      "horizon_pruned": 0,
+      "reason_counts": {
+        "kinematic_constraint": 6
+      },
+      "conflict_examples": []
+    },
+    "failure_diagnostics": {},
+    "start_state": [
+      27,
+      17,
+      3.1415926536,
+      0,
+      0
+    ],
+    "final_state": [
+      9.9999999999999964,
+      4.9999999999998943,
+      -3.1415926535795959,
+      0,
+      11.950664408693909
+    ],
+    "final_position_error_m": 1.0575292456153771E-13,
+    "final_heading_error_rad": 9.7699626167013776E-15,
+    "kinematic_validation": {
+      "valid": true,
+      "max_position_residual_m": 5.0242958677880805E-15,
+      "max_heading_residual_rad": 4.4408920985006262E-16,
+      "max_speed_residual_mps": 2.3869795029440866E-15,
+      "max_heading_step_rad": 0.022017045453738504,
+      "collision_count": 0,
+      "constraint_failures": 0
+    }
+  },
+  "low_priority_path": {
+    "valid": true,
+    "error_code": 0,
+    "search_statistics": {
+      "expanded_nodes": 1184,
+      "generated_nodes": 6509,
+      "sampled_controls": 14796,
+      "collision_pruned_nodes": 7299,
+      "constraint_pruned_nodes": 988,
+      "closed_pruned_nodes": 2126,
+      "goal_connection_candidates": 7178,
+      "goal_connection_collision_pruned": 2341,
+      "goal_connection_geometric_candidates": 6191,
+      "goal_connection_boundary_pruned": 4883,
+      "open_peak": 1148,
+      "path_nodes": 383,
+      "elapsed_sec": 85.4916625,
+      "dynamic_pruned": 9619,
+      "resource_pruned": 9640,
+      "braking_midpoint_pruned": 761,
+      "faster_controls_skipped": 2949,
+      "waiting_nodes": 147,
+      "horizon_pruned": 0,
+      "reason_counts": {
+        "initial_motion_required": 9,
+        "dynamic_resource_block": 9619,
+        "analytic_boundary_collision": 4883,
+        "kinematic_constraint": 979,
+        "outside_time_space_bounds": 21
+      },
+      "conflict_examples": [
+        {
+          "collision": true,
+          "reason": "dynamic_resource_block",
+          "minimum_distance_m": null,
+          "minimum_distance_lower_bound_m": null,
+          "conflict_time_s": 4.75,
+          "conflict_position_xy": [
+            16.25,
+            10.25
+          ],
+          "obstacle_id": "vehicle_002",
+          "resource_conflict": true,
+          "physical_collision": false,
+          "rectangle_collision": false,
+          "checked_samples": 0,
+          "resource_indices": [
+            22833,
+            22892,
+            22893,
+            22952,
+            22953
+          ],
+          "resources_checked": 5,
+          "has_intermediate_conflict": true,
+          "distance_evaluated": false,
+          "distance_samples": [],
+          "filter_statistics": {
+            "circle_positive": 0,
+            "aabb_positive": 0,
+            "rectangle_positive": 0,
+            "circle_false_positive": 0,
+            "aabb_false_positive": 0
+          }
+        },
+        {
+          "collision": true,
+          "reason": "dynamic_resource_block",
+          "minimum_distance_m": null,
+          "minimum_distance_lower_bound_m": null,
+          "conflict_time_s": 4.75,
+          "conflict_position_xy": [
+            16.25,
+            10.25
+          ],
+          "obstacle_id": "vehicle_002",
+          "resource_conflict": true,
+          "physical_collision": false,
+          "rectangle_collision": false,
+          "checked_samples": 0,
+          "resource_indices": [
+            22833,
+            22892,
+            22893,
+            22952,
+            22953
+          ],
+          "resources_checked": 5,
+          "has_intermediate_conflict": true,
+          "distance_evaluated": false,
+          "distance_samples": [],
+          "filter_statistics": {
+            "circle_positive": 0,
+            "aabb_positive": 0,
+            "rectangle_positive": 0,
+            "circle_false_positive": 0,
+            "aabb_false_positive": 0
+          }
+        },
+        {
+          "collision": true,
+          "reason": "dynamic_resource_block",
+          "minimum_distance_m": null,
+          "minimum_distance_lower_bound_m": null,
+          "conflict_time_s": 4.75,
+          "conflict_position_xy": [
+            16.25,
+            10.25
+          ],
+          "obstacle_id": "vehicle_002",
+          "resource_conflict": true,
+          "physical_collision": false,
+          "rectangle_collision": false,
+          "checked_samples": 0,
+          "resource_indices": [
+            22833,
+            22892
+          ],
+          "resources_checked": 2,
+          "has_intermediate_conflict": true,
+          "distance_evaluated": false,
+          "distance_samples": [],
+          "filter_statistics": {
+            "circle_positive": 0,
+            "aabb_positive": 0,
+            "rectangle_positive": 0,
+            "circle_false_positive": 0,
+            "aabb_false_positive": 0
+          }
+        },
+        {
+          "collision": true,
+          "reason": "dynamic_resource_block",
+          "minimum_distance_m": null,
+          "minimum_distance_lower_bound_m": null,
+          "conflict_time_s": 4.5,
+          "conflict_position_xy": [
+            15.75,
+            10.75
+          ],
+          "obstacle_id": "vehicle_002",
+          "resource_conflict": true,
+          "physical_collision": false,
+          "rectangle_collision": false,
+          "checked_samples": 0,
+          "resource_indices": 22892,
+          "resources_checked": 1,
+          "has_intermediate_conflict": false,
+          "distance_evaluated": false,
+          "distance_samples": [],
+          "filter_statistics": {
+            "circle_positive": 0,
+            "aabb_positive": 0,
+            "rectangle_positive": 0,
+            "circle_false_positive": 0,
+            "aabb_false_positive": 0
+          }
+        },
+        {
+          "collision": true,
+          "reason": "dynamic_resource_block",
+          "minimum_distance_m": null,
+          "minimum_distance_lower_bound_m": null,
+          "conflict_time_s": 4.5,
+          "conflict_position_xy": [
+            15.75,
+            10.75
+          ],
+          "obstacle_id": "vehicle_002",
+          "resource_conflict": true,
+          "physical_collision": false,
+          "rectangle_collision": false,
+          "checked_samples": 0,
+          "resource_indices": 22892,
+          "resources_checked": 1,
+          "has_intermediate_conflict": false,
+          "distance_evaluated": false,
+          "distance_samples": [],
+          "filter_statistics": {
+            "circle_positive": 0,
+            "aabb_positive": 0,
+            "rectangle_positive": 0,
+            "circle_false_positive": 0,
+            "aabb_false_positive": 0
+          }
+        },
+        {
+          "collision": true,
+          "reason": "dynamic_resource_block",
+          "minimum_distance_m": null,
+          "minimum_distance_lower_bound_m": null,
+          "conflict_time_s": 4.5,
+          "conflict_position_xy": [
+            16.25,
+            10.25
+          ],
+          "obstacle_id": "vehicle_002",
+          "resource_conflict": true,
+          "physical_collision": false,
+          "rectangle_collision": false,
+          "checked_samples": 0,
+          "resource_indices": [
+            22833,
+            22892
+          ],
+          "resources_checked": 2,
+          "has_intermediate_conflict": false,
+          "distance_evaluated": false,
+          "distance_samples": [],
+          "filter_statistics": {
+            "circle_positive": 0,
+            "aabb_positive": 0,
+            "rectangle_positive": 0,
+            "circle_false_positive": 0,
+            "aabb_false_positive": 0
+          }
+        },
+        {
+          "collision": true,
+          "reason": "dynamic_resource_block",
+          "minimum_distance_m": null,
+          "minimum_distance_lower_bound_m": null,
+          "conflict_time_s": 4.5,
+          "conflict_position_xy": [
+            16.25,
+            10.25
+          ],
+          "obstacle_id": "vehicle_002",
+          "resource_conflict": true,
+          "physical_collision": false,
+          "rectangle_collision": false,
+          "checked_samples": 0,
+          "resource_indices": [
+            22833,
+            22892
+          ],
+          "resources_checked": 2,
+          "has_intermediate_conflict": false,
+          "distance_evaluated": false,
+          "distance_samples": [],
+          "filter_statistics": {
+            "circle_positive": 0,
+            "aabb_positive": 0,
+            "rectangle_positive": 0,
+            "circle_false_positive": 0,
+            "aabb_false_positive": 0
+          }
+        },
+        {
+          "collision": true,
+          "reason": "dynamic_resource_block",
+          "minimum_distance_m": null,
+          "minimum_distance_lower_bound_m": null,
+          "conflict_time_s": 4.5,
+          "conflict_position_xy": [
+            16.25,
+            10.25
+          ],
+          "obstacle_id": "vehicle_002",
+          "resource_conflict": true,
+          "physical_collision": false,
+          "rectangle_collision": false,
+          "checked_samples": 0,
+          "resource_indices": 22833,
+          "resources_checked": 1,
+          "has_intermediate_conflict": false,
+          "distance_evaluated": false,
+          "distance_samples": [],
+          "filter_statistics": {
+            "circle_positive": 0,
+            "aabb_positive": 0,
+            "rectangle_positive": 0,
+            "circle_false_positive": 0,
+            "aabb_false_positive": 0
+          }
+        },
+        {
+          "collision": true,
+          "reason": "dynamic_resource_block",
+          "minimum_distance_m": null,
+          "minimum_distance_lower_bound_m": null,
+          "conflict_time_s": 4.5,
+          "conflict_position_xy": [
+            15.75,
+            10.75
+          ],
+          "obstacle_id": "vehicle_002",
+          "resource_conflict": true,
+          "physical_collision": false,
+          "rectangle_collision": false,
+          "checked_samples": 0,
+          "resource_indices": [
+            22892,
+            22952
+          ],
+          "resources_checked": 2,
+          "has_intermediate_conflict": false,
+          "distance_evaluated": false,
+          "distance_samples": [],
+          "filter_statistics": {
+            "circle_positive": 0,
+            "aabb_positive": 0,
+            "rectangle_positive": 0,
+            "circle_false_positive": 0,
+            "aabb_false_positive": 0
+          }
+        },
+        {
+          "collision": true,
+          "reason": "dynamic_resource_block",
+          "minimum_distance_m": null,
+          "minimum_distance_lower_bound_m": null,
+          "conflict_time_s": 4.5,
+          "conflict_position_xy": [
+            15.75,
+            10.75
+          ],
+          "obstacle_id": "vehicle_002",
+          "resource_conflict": true,
+          "physical_collision": false,
+          "rectangle_collision": false,
+          "checked_samples": 0,
+          "resource_indices": [
+            22892,
+            22952
+          ],
+          "resources_checked": 2,
+          "has_intermediate_conflict": false,
+          "distance_evaluated": false,
+          "distance_samples": [],
+          "filter_statistics": {
+            "circle_positive": 0,
+            "aabb_positive": 0,
+            "rectangle_positive": 0,
+            "circle_false_positive": 0,
+            "aabb_false_positive": 0
+          }
+        }
+      ]
+    },
+    "failure_diagnostics": {},
+    "start_state": [
+      4,
+      17,
+      -1.5707963268,
+      0,
+      0
+    ],
+    "final_state": [
+      24.000000000000064,
+      15.000000000000034,
+      1.5707963267999858,
+      0,
+      10.871061843526341
+    ],
+    "final_position_error_m": 7.2308852015537254E-14,
+    "final_heading_error_rad": 1.4210854715202004E-14,
+    "kinematic_validation": {
+      "valid": true,
+      "max_position_residual_m": 1.1234667099445444E-14,
+      "max_heading_residual_rad": 1.7763568394002505E-15,
+      "max_speed_residual_mps": 2.9976021664879227E-15,
+      "max_heading_step_rad": 0.022017045453738504,
+      "collision_count": 0,
+      "constraint_failures": 0
+    }
+  },
+  "validation": {
+    "valid": true,
+    "reason": "passed",
+    "collision": false,
+    "conflict_reason": "none",
+    "minimum_distance_m": 2.1723306384382126,
+    "minimum_distance_lower_bound_m": 1.8882942978784536,
+    "conflict_time_s": null,
+    "conflict_position_xy": [
+      null,
+      null
+    ],
+    "resource_overlap_blocks": 0,
+    "high_starts_at_rest_t0": true,
+    "low_starts_at_rest_t0": true,
+    "both_move_immediately": true,
+    "both_stop_at_goal": true,
+    "both_kinematics_valid": true,
+    "dynamic_pruned_nodes": 9619,
+    "resource_pruned_nodes": 9640,
+    "rejection_counts": {
+      "initial_motion_required": 9,
+      "dynamic_resource_block": 9619,
+      "analytic_boundary_collision": 4883,
+      "kinematic_constraint": 979,
+      "outside_time_space_bounds": 21
+    },
+    "adjustable_speed_range_mps": [
+      0,
+      5
+    ],
+    "adjustable_enter_time_range_s": [
+      0,
+      60
+    ],
+    "adjustments_applied": false,
+    "failure_diagnostics": {},
+    "independent_resource_overlap_blocks": 0
+  },
+  "resource_statistics": {
+    "static": {
+      "boundary_xy_blocks": 1476,
+      "static_xy_blocks": 0,
+      "inflation_radius_m": 4.1135376806345167,
+      "cell_padding_m": 0.35355339059327379
+    },
+    "high_priority": {
+      "sampled_poses": 721,
+      "swept_segments": 245,
+      "max_sweep_padding_m": 0.04999999999999933,
+      "marked_resource_blocks": 8334,
+      "conflict_blocks": 2769,
+      "new_blocks": 5565,
+      "time_range": [
+        0,
+        11.950664408693909
+      ],
+      "end_policy": "hold_until_t_max"
+    },
+    "low_priority": {
+      "sampled_poses": 1152,
+      "swept_segments": 395,
+      "max_sweep_padding_m": 0.049974173553719407,
+      "marked_resource_blocks": 8636,
+      "conflict_blocks": 4969,
+      "new_blocks": 3667,
+      "time_range": [
+        0,
+        10.871061843526341
+      ],
+      "end_policy": "hold_until_t_max"
+    }
+  },
+  "output_files": {
+    "trajectory_png": "F:\\study\\postgraduate\\联培\\路径规划论文\\代码\\辅助\\day 4\\MATLAB-9.11-45973bf338437f8ae7b9fe154fc587f714a4c0df\\outputs\\day6_search_trajectories.png",
+    "speed_png": "F:\\study\\postgraduate\\联培\\路径规划论文\\代码\\辅助\\day 4\\MATLAB-9.11-45973bf338437f8ae7b9fe154fc587f714a4c0df\\outputs\\day6_speed_time.png",
+    "animation_gif": "F:\\study\\postgraduate\\联培\\路径规划论文\\代码\\辅助\\day 4\\MATLAB-9.11-45973bf338437f8ae7b9fe154fc587f714a4c0df\\outputs\\day6_sequential_planning.gif",
+    "report_json": "F:\\study\\postgraduate\\联培\\路径规划论文\\代码\\辅助\\day 4\\MATLAB-9.11-45973bf338437f8ae7b9fe154fc587f714a4c0df\\outputs\\day6_sequential_report.json",
+    "trajectory_mat": "F:\\study\\postgraduate\\联培\\路径规划论文\\代码\\辅助\\day 4\\MATLAB-9.11-45973bf338437f8ae7b9fe154fc587f714a4c0df\\outputs\\day6_sequential_trajectories.mat"
+  },
+  "final_conflict_report": {
+    "collision": false,
+    "reason": "none",
+    "minimum_distance_m": 2.1723306384382126,
+    "minimum_distance_lower_bound_m": 1.8882942978784536,
+    "conflict_time_s": null,
+    "conflict_position_xy": [
+      null,
+      null
+    ],
+    "obstacle_id": "",
+    "resource_conflict": false,
+    "physical_collision": false,
+    "rectangle_collision": false,
+    "checked_samples": 1583,
+    "resource_indices": [],
+    "resources_checked": 8636,
+    "has_intermediate_conflict": false,
+    "distance_evaluated": true,
+    "filter_statistics": {
+      "circle_positive": 202,
+      "aabb_positive": 46,
+      "rectangle_positive": 0,
+      "circle_false_positive": 202,
+      "aabb_false_positive": 46
+    }
+  }
+}

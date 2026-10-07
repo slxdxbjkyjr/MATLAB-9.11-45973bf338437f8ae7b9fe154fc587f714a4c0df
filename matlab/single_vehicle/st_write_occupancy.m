@@ -16,6 +16,10 @@ elseif map.owners(registered).type ~= owner_type
     error('STOccupancy:InvalidOwner','相同ID不能用于不同占用类型。');
 end
 indices = unique(double(linear_indices(:)));
+% 写入后旧动态掩码/包络/稀疏块缓存失效；下次查询须从新归属重建。
+cache_fields = intersect(fieldnames(map),{'dynamic_occupancy','dynamic_owner_index', ...
+    'dynamic_layer_bounds','dynamic_layer_cells','dynamic_layer_centers','dynamic_context_ids'});
+if ~isempty(cache_fields), map = rmfield(map,cache_fields); end
 old = map.owner_id(indices);
 new_indices = indices(old == 0);
 other_indices = indices(old ~= 0 & old ~= registered);

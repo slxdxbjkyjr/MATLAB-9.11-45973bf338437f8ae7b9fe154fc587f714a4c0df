@@ -1,4 +1,4 @@
-function [outside,detail] = vhybrid_curve_boundary_check(start,curve,radius,map,vehicle)
+function [outside,detail] = vhybrid_curve_boundary_check(start,curve,radius,map,vehicle,gear)
 %VHYBRID_CURVE_BOUNDARY_CHECK 解析排除必定穿出矩形道路的完整Dubins曲线。
 % 输入：后轴起始位姿、三段Dubins几何、最小半径、原始地图和车辆配置。
 % 输出：outside为已证明越界；detail记录是否适用解析证明、包络和拒绝段。
@@ -7,6 +7,7 @@ function [outside,detail] = vhybrid_curve_boundary_check(start,curve,radius,map,
 % 只对轴对齐矩形道路启用；其他道路返回未证明，仍由逐段碰撞检测验收。
 % 该剪枝只拒绝确定不可行的几何，与速度无关，不引导或替代路径搜索。
 outside = false;
+if nargin < 6, gear = 1; end
 detail = struct('evaluated',false,'swept_bounds',nan(1,4),'first_rejected_segment',0);
 boundary = map.boundary_xy;
 if isequal(boundary(1,:),boundary(end,:)), boundary(end,:) = []; end
@@ -21,6 +22,8 @@ if ~all(on_x & on_y) || numel(unique(codes))~=4, return; end
 detail.evaluated = true;
 footprint = inflate_vehicle_occupancy(vehicle,0);
 state = double(start(1:3)); state = state(:).';
+% 几何沿运动切向展开；倒车时同时旋转局部车身坐标，保留后轴偏心。
+if gear<0, state(3) = state(3)+pi; footprint.corners_local = -footprint.corners_local; end
 swept = [Inf,Inf,-Inf,-Inf];
 for segment = 1:3
     length_m = curve.lengths(segment); turn = curve.types(segment);

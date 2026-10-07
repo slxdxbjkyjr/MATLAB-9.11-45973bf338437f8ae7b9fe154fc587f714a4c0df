@@ -21,6 +21,8 @@ classdef test_vhybrid_core < matlab.unittest.TestCase
                 'config', 'map_config.json'))));
             testCase.PlannerConfig = jsondecode(fileread(fullfile(projectDir, ...
                 'config', 'planner_config.json')));
+            % 本套件保留Day4前进扩展的基线语义；倒车由新套件独立覆盖。
+            testCase.PlannerConfig.vhybrid.reverse_enabled = false;
         end
     end
 

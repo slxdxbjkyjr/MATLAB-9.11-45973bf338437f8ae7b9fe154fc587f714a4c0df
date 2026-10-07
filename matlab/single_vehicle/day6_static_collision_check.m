@@ -9,13 +9,30 @@ if ~isnumeric(pose) || numel(pose) ~= 3 || ~isreal(pose) || any(~isfinite(pose))
     error('Day6:StaticCollision:InvalidPose','位姿必须为有限实数[x,y,theta]。');
 end
 pose = double(pose(:).');
-footprint = inflate_vehicle_occupancy(vehicle_config,0);
+margin = struct('front',0,'rear',0,'side',0);
+if isfield(vehicle_config,'collision_margin_m'), margin = vehicle_config.collision_margin_m; end
+if ~isfield(map,'collision_context') || ...
+        ~isequal(map.collision_context.dimensions_m,vehicle_config.dimensions_m) || ...
+        ~isequal(map.collision_context.margin,margin) || ...
+        ~isequal(map.collision_context.source_boundary,map.boundary_xy) || ...
+        ~isequal(map.collision_context.source_obstacles,map.obstacles)
+    map = prepare_static_context(map,vehicle_config);
+end
+context = map.collision_context;
+footprint = context.footprint;
 c = cos(pose(3)); s = sin(pose(3));
 corners = footprint.corners_local*[c,s;-s,c]+pose(1:2);
-boundary = polygonVertices(map.boundary_xy);
+boundary = context.boundary;
 detail = struct('type','none','obstacle_index',0,'corners_xy',corners);
-is_collision = ~all(inpolygon(corners(:,1),corners(:,2),boundary(:,1),boundary(:,2)));
-if ~is_collision && ~isConvex(boundary)
+if context.is_rectangle
+    % 轴对齐矩形道路的四角区间判定与inpolygon等价，避免通用多边形开销。
+    b = context.bounds;
+    is_collision = any(corners(:,1)<b(1) | corners(:,1)>b(3) | ...
+        corners(:,2)<b(2) | corners(:,2)>b(4));
+else
+    is_collision = ~all(inpolygon(corners(:,1),corners(:,2),boundary(:,1),boundary(:,2)));
+end
+if ~is_collision && ~context.boundary_is_convex
     % 凸边界中四角在内即保证矩形在内；凹边界必须检查车身边穿界。
     is_collision = boundaryCrossed(corners,boundary);
 end
@@ -23,11 +40,12 @@ if is_collision
     detail.type = 'road_boundary';
     return;
 end
-for k = 1:numel(map.obstacles)
-    obstacle = polygonVertices(map.obstacles{k});
+for k = 1:numel(context.obstacles)
+    obstacle = context.obstacles{k};
     % 包围盒仅用于快速排除明显分离，多边形判定仍是最后判据。
-    if max(corners(:,1)) < min(obstacle(:,1)) || max(obstacle(:,1)) < min(corners(:,1)) || ...
-            max(corners(:,2)) < min(obstacle(:,2)) || max(obstacle(:,2)) < min(corners(:,2))
+    ob = context.obstacle_bounds(k,:);
+    if max(corners(:,1)) < ob(1) || ob(3) < min(corners(:,1)) || ...
+            max(corners(:,2)) < ob(2) || ob(4) < min(corners(:,2))
         continue;
     end
     overlap = any(inpolygon(corners(:,1),corners(:,2),obstacle(:,1),obstacle(:,2))) || ...
@@ -49,27 +67,6 @@ for k = 1:numel(map.obstacles)
         return;
     end
 end
-end
-
-function vertices = polygonVertices(vertices)
-%POLYGONVERTICES 统一开环顶点数组；边循环自行补上末顶点到首顶点的边。
-vertices = double(vertices);
-if size(vertices,2) ~= 2 || size(vertices,1) < 3 || any(~isfinite(vertices(:)))
-    error('Day6:StaticCollision:InvalidPolygon','静态几何须为有限Nx2多边形。');
-end
-if isequal(vertices(1,:),vertices(end,:)), vertices(end,:) = []; end
-end
-
-function flag = isConvex(vertices)
-%ISCONVEX 以相邻边有向叉积识别凸边界，避免常规矩形道路的逐边求交开销。
-n = size(vertices,1); turns = zeros(n,1);
-for k = 1:n
-    a = vertices(mod(k,n)+1,:)-vertices(k,:);
-    b = vertices(mod(k+1,n)+1,:)-vertices(mod(k,n)+1,:);
-    turns(k) = cross2(a,b);
-end
-turns = turns(abs(turns)>1e-12);
-flag = isempty(turns) || all(turns>0) || all(turns<0);
 end
 
 function crossed = boundaryCrossed(corners,boundary)

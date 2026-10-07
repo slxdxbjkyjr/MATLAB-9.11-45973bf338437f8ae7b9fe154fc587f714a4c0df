@@ -21,14 +21,17 @@ extra = planner.day6.minimum_safety_distance_m/2;
 if ~isempty(st_map), extra = max(extra,st_map.config.safety_distance_m); end
 footprint = inflate_vehicle_occupancy(vehicle,extra);
 if ~isempty(st_map)
-    if ~isfield(st_map,'dynamic_layer_bounds'), st_map = prepare_dynamic_context(st_map,obstacles); end
+    context_ids = cell(1,numel(obstacles));
+    if ~isempty(obstacles), context_ids = {obstacles.id}; end
+    if ~isfield(st_map,'dynamic_context_ids') || ~isequal(st_map.dynamic_context_ids,context_ids)
+        st_map = prepare_dynamic_context(st_map,obstacles);
+    end
     [~,inside] = st_resource_index(st_map,states(:,[1,2,5]));
     outside = any(~inside) || footprintOutside(states,st_map,footprint);
     indices = zeros(0,1);
     if ~outside && possibleResourceOverlap(states,st_map,footprint)
-        [indices,outside] = day6_resource_blocks(states,st_map,footprint,~collect);
+        [indices,outside,report.resources_checked] = day6_resource_blocks(states,st_map,footprint,~collect);
     end
-    report.resources_checked = numel(indices);
     if outside
         collision = true; report.collision = true; report.resource_conflict = true;
         report.reason = 'outside_time_space_bounds';
@@ -42,9 +45,8 @@ if ~isempty(st_map)
         [ix,iy,it] = ind2sub([st_map.nx,st_map.ny,st_map.nt],hits(1));
         report.conflict_time_s = max(states(1,5),min(states(end,5),st_map.t_coords(it)));
         report.conflict_position_xy = [st_map.x_coords(ix),st_map.y_coords(iy)];
-        [~,~,~,~,detail] = query_occupancy(st_map.x_coords(ix),st_map.y_coords(iy),st_map.t_coords(it),st_map);
-        dynamic_ids = detail.owner_ids(strcmp(detail.owner_types,'dynamic_vehicle'));
-        if ~isempty(dynamic_ids), report.obstacle_id = dynamic_ids{1}; end
+        owner = double(st_map.dynamic_owner_index(hits(1)));
+        if owner>0, report.obstacle_id = st_map.owners(owner).id; end
     end
     % 在完整且包含所有高优先级车的资源图中，无动态资源重叠即安全。
     if ~collect
@@ -145,27 +147,34 @@ dt = diff(states(:,5));
 linear = hypot(diff(states(:,1)),diff(states(:,2)))./dt;
 angular = abs(diff(states(:,3)))./dt;
 % 加减速重放的车角速率在段端可大于段均值；按端速度/均速放大角速率。
-mean_speed = 0.5*(states(1:end-1,4)+states(2:end,4));
-peak_speed = max(states(1:end-1,4),states(2:end,4));
+% 公共接口速度是大小；即使倒车，运动不确定半径也必须为非负。
+mean_speed = 0.5*(abs(states(1:end-1,4))+abs(states(2:end,4)));
+peak_speed = max(abs(states(1:end-1,4)),abs(states(2:end,4)));
 factor = ones(size(mean_speed));
 moving = mean_speed > 0;
 factor(moving) = max(1,peak_speed(moving)./mean_speed(moving));
-rate = max([linear;states(:,4)])+footprint.radius*max(angular.*factor);
+rate = max([linear;abs(states(:,4))])+footprint.radius*max(angular.*factor);
 end
 
 function states_out = replayEgo(trajectory,states,times,vehicle,planner)
 %REPLAYEGO 对带控制的自车边按既有运动学重放，避免用位姿线性插值代替转弯。
+% gear=+1/-1 为离散档位，v 保持非负；缺少 gear 的旧轨迹按前进重放。
 states_out = zeros(numel(times),5);
-dyn = planner.dynamics;
+gears = ones(size(states,1),1);
+if isfield(trajectory,'gear'), gears = trajectory.gear(:); end
 for k = 1:numel(times)
     index = find(states(:,5) <= times(k),1,'last');
     if index == size(states,1) || times(k) == states(index,5)
         states_out(k,:) = states(index,:); continue;
     end
-    [state,~,~,valid] = summon_vehicle_dynamic(states(index,:),trajectory.steering_angle(index+1), ...
-        trajectory.acceleration(index+1),times(k)-states(index,5),vehicle.dimensions_m.wheelbase, ...
-        dyn.v_max_mps,dyn.v_min_mps,dyn.a_min_mps2,dyn.a_max_mps2, ...
-        min(vehicle.steering.maximum_steer_rad,dyn.delta_max_rad));
+    if gears(index) ~= gears(index+1) && ...
+            (states(index,4) > 1e-9 || states(index+1,4) > 1e-9 || ...
+            abs(trajectory.acceleration(index+1)) > 1e-9)
+        error('DynamicCollision:InvalidTrajectory','换挡边必须停稳且加速度为零。');
+    end
+    [state,~,~,valid] = summon_vehicle_dynamic_gear( ...
+        states(index,:),trajectory.steering_angle(index+1),trajectory.acceleration(index+1), ...
+        times(k)-states(index,5),vehicle,planner,gears(index+1));
     if ~valid, error('DynamicCollision:InvalidTrajectory','轨迹控制无法重放。'); end
     states_out(k,:) = state;
 end

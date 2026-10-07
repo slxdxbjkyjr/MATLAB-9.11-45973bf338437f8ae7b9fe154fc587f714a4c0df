@@ -19,13 +19,23 @@ statistics = struct('candidates', 0, 'collision_pruned', 0, ...
     'dynamic_pruned',0,'resource_pruned',0,'reason_counts',struct(), ...
     'conflict_examples',{{}},'geometric_candidates',0,'boundary_geometry_pruned',0);
 start = [parent_node.x,parent_node.y,parent_node.theta,parent_node.v,parent_node.t];
+gear = 1;
+if isfield(parent_node,'gear'), gear = parent_node.gear; end
+if gear < 0 && isfield(cfg,'max_reverse_speed_mps')
+    dyn.v_max_mps = min(dyn.v_max_mps,cfg.max_reverse_speed_mps);
+end
 goal_state = double(goal_state(:).');
 if hypot(start(1)-goal_state(1),start(2)-goal_state(2)) > cfg.goal_connection_distance_m
     return;
 end
 delta_max = min(vehicle_config.steering.maximum_steer_rad, dyn.delta_max_rad);
 radius = vehicle_config.dimensions_m.wheelbase / tan(delta_max);
-curves = vhybrid_dubins_candidates(start(1:3), goal_state(1:3), radius);
+% 倒车的运动切向比车身航向多 pi；同挡位连接不隐式换挡。
+motion_start = start(1:3); motion_goal = goal_state(1:3);
+if gear<0
+    motion_start(3) = motion_start(3)+pi; motion_goal(3) = motion_goal(3)+pi;
+end
+curves = vhybrid_dubins_candidates(motion_start,motion_goal,radius);
 % 采样的是连接段巡航速度，终端速度始终为目标停车约束。
 speeds = unique([cfg.goal_connection_speed_samples_mps(:).', ...
     cfg.reference_speed_mps, start(4), cfg.terminal_speed_mps]);
@@ -35,7 +45,7 @@ for curve_id = 1:numel(curves)
     statistics.geometric_candidates = statistics.geometric_candidates+1;
     % 先用车身角点完整圆弧极值证明是否必定越界，再尝试速度相位。
     % 这避免反复用不同速度积分同一条必不可行的几何曲线。
-    [outside,~] = vhybrid_curve_boundary_check(start,curve,radius,map,vehicle_config);
+    [outside,~] = vhybrid_curve_boundary_check(start,curve,radius,map,vehicle_config,gear);
     if outside
         statistics.boundary_geometry_pruned = statistics.boundary_geometry_pruned+1;
         key = 'analytic_boundary_collision';
@@ -103,6 +113,8 @@ function trajectory = connectionTrajectory(parent,nodes)
 trajectory = struct('x',[parent.x;vertcat(nodes.x)], ...
     'y',[parent.y;vertcat(nodes.y)],'theta',[parent.theta;vertcat(nodes.theta)], ...
     'v',[parent.v;vertcat(nodes.v)],'t',[parent.t;vertcat(nodes.t)], ...
+    'gear',[parent.gear;vertcat(nodes.gear)], ...
+    'is_gear_change',[false;vertcat(nodes.is_gear_change)], ...
     'acceleration',[0;vertcat(nodes.acceleration)], ...
     'steering_angle',[0;vertcat(nodes.steering_angle)]);
 end
@@ -113,12 +125,14 @@ if isempty(st_map), horizon = planner.st_occupancy.t_max;
 else, horizon = st_map.t_max; end
 last_time = horizon-max(1e-9,16*eps(horizon));
 trajectory = struct('x',path.x(end),'y',path.y(end),'theta',path.theta(end), ...
-    'v',path.v(end),'t',path.t(end),'acceleration',0,'steering_angle',0);
+    'v',path.v(end),'t',path.t(end),'acceleration',0,'steering_angle',0, ...
+    'gear',path.gear(end),'is_gear_change',false);
 if last_time > path.t(end)
     trajectory.x(2,1) = path.x(end); trajectory.y(2,1) = path.y(end);
     trajectory.theta(2,1) = path.theta(end); trajectory.v(2,1) = 0;
     trajectory.t(2,1) = last_time;
     trajectory.acceleration(2,1) = 0; trajectory.steering_angle(2,1) = 0;
+    trajectory.gear(2,1) = path.gear(end); trajectory.is_gear_change(2,1) = false;
 end
 end
 end
@@ -152,6 +166,7 @@ function [nodes, reason] = integrateCurve(parent, goal, curve, phases, ...
 cfg = planner.vhybrid; dyn = planner.dynamics;
 nodes = repmat(vhybrid_node(),0,1); reason = 'constraint';
 state = [parent.x,parent.y,parent.theta,parent.v,parent.t];
+gear = parent.gear;
 previous = parent; segment = 1; phase = 1;
 segment_remaining = curve.lengths(1); time_remaining = phases(1,1);
 while segment <= 3 && phase <= size(phases,1)
@@ -171,7 +186,7 @@ while segment <= 3 && phase <= size(phases,1)
     % 根据剩余相位时间修正舍入误差；不修改状态，不超过加速度边界。
     acceleration = (phases(phase,3)-state(4))/time_remaining;
     acceleration = max(dyn.a_min_mps2,min(dyn.a_max_mps2,acceleration));
-    steering = curve.types(segment)*delta_max;
+    steering = gear*curve.types(segment)*delta_max;
     dt = min(cfg.goal_connection_step_s,time_remaining);
     ds_limit = min(segment_remaining,cfg.collision_check_step_m);
     if segment == 3 && segment_remaining <= 1e-10
@@ -184,25 +199,24 @@ while segment <= 3 && phase <= size(phases,1)
         end_speed = sqrt(max(0,state(4)^2+2*acceleration*ds_limit));
         dt = min(dt,2*ds_limit/(state(4)+end_speed));
     end
-    [next,ds,~,valid] = summon_vehicle_dynamic(state,steering,acceleration,dt, ...
-        vehicle.dimensions_m.wheelbase,dyn.v_max_mps,dyn.v_min_mps, ...
-        dyn.a_min_mps2,dyn.a_max_mps2,delta_max);
-    if ~valid || ds <= 0 || next(5) <= state(5)
+    [next,ds,~,valid] = summon_vehicle_dynamic_gear(state,steering,acceleration,dt, ...
+        vehicle,planner,gear);
+    if ~valid || abs(ds) <= 0 || next(5) <= state(5)
         return;
     end
     if day6_static_collision_check(next(1:3),map,vehicle)
         reason = 'collision'; return;
     end
-    [g,h] = vhybrid_cost(previous,next,goal,planner,ds,steering);
+    [g,h] = vhybrid_cost(previous,next,goal,planner,ds,steering,gear,false);
     indices = [floor((next(1)-map.bounds(1))/cfg.xy_grid_resolution_m), ...
         floor((next(2)-map.bounds(2))/cfg.xy_grid_resolution_m), ...
         round((mod(next(3)+pi,2*pi))/cfg.yaw_grid_resolution_rad), ...
         round(next(4)/cfg.velocity_grid_resolution_mps),round(next(5)/cfg.time_grid_resolution_s)];
-    node = vhybrid_node(next,acceleration,steering,previous.node_id,g,h,indices,0);
-    node.direction = 1; node.travelled_distance = ds;
+    node = vhybrid_node(next,acceleration,steering,previous.node_id,g,h,indices,0,gear,false);
+    node.direction = gear; node.travelled_distance = ds;
     nodes(end+1,1) = node; %#ok<AGROW>
     previous = node; state = next;
-    segment_remaining = segment_remaining-ds; time_remaining = time_remaining-dt;
+    segment_remaining = segment_remaining-abs(ds); time_remaining = time_remaining-dt;
 end
 % 验收模型积分的真实末状态，绝不将节点替换成目标。
 if ~isempty(nodes) && hypot(state(1)-goal(1),state(2)-goal(2)) <= cfg.goal_position_tolerance_m && ...

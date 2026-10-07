@@ -19,7 +19,7 @@
       "vehicle_type": "F515_APA_Seres_V3p24",
       "priority": 2,
       "start_pose": {"x_m": 27.0, "y_m": 17.0, "yaw_rad": 3.1415926536},
-      "summon_goal": {"id": "summon_point_002", "x_m": 15.0, "y_m": 9.0, "yaw_rad": 3.1415926536}
+      "summon_goal": {"id": "summon_point_002", "x_m": 10.0, "y_m": 5, "yaw_rad": 3.1415926536}
     },
     {
       "id": "vehicle_003",

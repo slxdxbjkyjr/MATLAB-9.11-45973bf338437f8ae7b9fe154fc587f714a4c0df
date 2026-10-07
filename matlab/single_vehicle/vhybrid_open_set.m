@@ -1,8 +1,11 @@
 classdef vhybrid_open_set < handle
-    %VHYBRID_OPEN_SET 用最小 f_cost 选择待扩展节点。
+    %VHYBRID_OPEN_SET 二叉最小堆，插入/取最小节点均为 O(log N)。
+    % 相同 f 值按插入顺序稳定选择，保持原线性 min 的平局行为。
 
     properties (Access = private)
         nodes_;
+        order_;
+        sequence_ = 0;
         best_g_;
     end
 
@@ -10,18 +13,13 @@ classdef vhybrid_open_set < handle
         function obj = vhybrid_open_set()
             % 构造空 Open 集合。
             obj.nodes_ = repmat(vhybrid_node(), 0, 1);
+            obj.order_ = zeros(0,1);
             obj.best_g_ = containers.Map('KeyType', 'char', 'ValueType', 'double');
         end
 
         function push(obj, node)
             %PUSH 将候选节点放入 Open 集合。
-            key = obj.key(node);
-            if isKey(obj.best_g_, key) && obj.best_g_(key) <= node.g_cost
-                return;
-            end
-            obj.best_g_(key) = node.g_cost;
-            % 删除末节点后空列可能成为 1x0；numel 避免生成空字段节点。
-            obj.nodes_(numel(obj.nodes_)+1,1) = node;
+            obj.push_or_update(node);
         end
 
         function accepted = push_or_update(obj, node)
@@ -32,31 +30,42 @@ classdef vhybrid_open_set < handle
                 return;
             end
             obj.best_g_(key) = node.g_cost;
-            obj.nodes_(numel(obj.nodes_)+1,1) = node;
+            obj.sequence_ = obj.sequence_+1;
+            index = numel(obj.nodes_)+1;
+            obj.nodes_(index,1) = node;
+            obj.order_(index,1) = obj.sequence_;
+            while index>1
+                parent = floor(index/2);
+                if ~obj.less(index,parent), break; end
+                obj.swap(index,parent); index = parent;
+            end
         end
 
         function [node, valid] = pop_min(obj)
-            %POP_MIN 取出 f_cost 最小的节点。
-            if isempty(obj.nodes_)
-                node = vhybrid_node();
-                valid = false;
-                return;
+            %POP_MIN 过期重复项惰性删除，不再线性扫描或递归取最小值。
+            node = vhybrid_node(); valid = false;
+            while ~isempty(obj.nodes_)
+                candidate = obj.nodes_(1);
+                count = numel(obj.nodes_);
+                if count==1
+                    obj.nodes_ = repmat(vhybrid_node(),0,1);
+                    obj.order_ = zeros(0,1);
+                else
+                    obj.nodes_(1) = obj.nodes_(count);
+                    obj.order_(1) = obj.order_(count);
+                    obj.nodes_(count) = []; obj.order_(count) = [];
+                    index = 1;
+                    while 2*index<=numel(obj.nodes_)
+                        child = 2*index;
+                        if child+1<=numel(obj.nodes_) && obj.less(child+1,child), child = child+1; end
+                        if ~obj.less(child,index), break; end
+                        obj.swap(index,child); index = child;
+                    end
+                end
+                key = obj.key(candidate);
+                if isKey(obj.best_g_,key) && candidate.g_cost>obj.best_g_(key)+1e-12, continue; end
+                node = candidate; valid = true; return;
             end
-            [~, local_index] = min([obj.nodes_.f_cost]);
-            if isempty(local_index)
-                node = vhybrid_node();
-                valid = false;
-                return;
-            end
-            node = obj.nodes_(local_index);
-            obj.nodes_(local_index) = [];
-            obj.nodes_ = obj.nodes_(:);
-            key = obj.key(node);
-            if isKey(obj.best_g_, key) && node.g_cost > obj.best_g_(key) + 1e-12
-                [node, valid] = obj.pop_min();
-                return;
-            end
-            valid = true;
         end
 
         function flag = is_empty(obj)
@@ -72,9 +81,19 @@ classdef vhybrid_open_set < handle
 
     methods (Access = private)
         function key = key(~, node)
-            %KEY 使用五维离散索引区分位置、航向、速度和时间。
-            key = sprintf('%d_%d_%d_%d_%d', node.x_index, node.y_index, ...
-                node.yaw_index, node.velocity_index, node.time_index);
+            %KEY 挡位与五维离散索引共同决定搜索状态。
+            key = sprintf('%d_%d_%d_%d_%d_%d', node.x_index, node.y_index, ...
+                node.yaw_index, node.velocity_index, node.time_index,node.gear);
+        end
+
+        function flag = less(obj,a,b)
+            fa = obj.nodes_(a).f_cost; fb = obj.nodes_(b).f_cost;
+            flag = fa<fb || (fa==fb && obj.order_(a)<obj.order_(b));
+        end
+
+        function swap(obj,a,b)
+            temporary = obj.nodes_(a); obj.nodes_(a) = obj.nodes_(b); obj.nodes_(b) = temporary;
+            temporary_order = obj.order_(a); obj.order_(a) = obj.order_(b); obj.order_(b) = temporary_order;
         end
     end
 end

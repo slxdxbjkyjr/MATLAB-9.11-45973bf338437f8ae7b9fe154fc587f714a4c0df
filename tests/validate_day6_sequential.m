@@ -8,7 +8,10 @@ test_dir = fileparts(mfilename('fullpath'));
 project_dir = fileparts(test_dir);
 addpath(fullfile(project_dir,'matlab','single_vehicle'));
 files = {'test_vehicle_dynamic.m','test_vhybrid_core.m', ...
-    'test_st_occupancy_map.m','test_dynamic_collision.m'};
+    'test_st_occupancy_map.m','test_dynamic_collision.m', ...
+    'test_reverse_motion.m','test_reverse_search.m', ...
+    'test_resource_query_equivalence.m','test_day6_performance_equivalence.m', ...
+    'test_motion_sample_cache.m'};
 results = runtests(cellfun(@(name) fullfile(test_dir,name),files,'UniformOutput',false));
 summary = struct('matlab_version',version,'checked_at',char(datetime('now')), ...
     'test_count',numel(results),'passed',sum([results.Passed]), ...
@@ -16,6 +19,7 @@ summary = struct('matlab_version',version,'checked_at',char(datetime('now')), ..
     'failed_tests',{{results([results.Failed]).Name}},'valid',false);
 demo = run_day6_sequential_planning_demo(save_outputs);
 summary.demo = demo.validation;
+summary.timings = demo.timings;
 summary.high_priority = pathSummary(demo.high_priority_path);
 summary.low_priority = pathSummary(demo.low_priority_path);
 summary.valid = summary.failed == 0 && summary.incomplete == 0 && demo.valid;
@@ -42,5 +46,9 @@ if ~isempty(path.t)
     value.final_position_error_m = path.final_position_error_m;
     value.final_heading_error_rad = path.final_heading_error_rad;
     value.kinematic_validation = path.kinematic_validation;
+    if isfield(path,'gear')
+        value.reverse_samples = nnz(path.gear < 0 & path.v > 1e-9);
+        value.gear_switches = nnz(diff(path.gear) ~= 0);
+    end
 end
 end

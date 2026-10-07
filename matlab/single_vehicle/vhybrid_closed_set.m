@@ -1,5 +1,5 @@
 classdef vhybrid_closed_set < handle
-    %VHYBRID_CLOSED_SET 保存五维状态离散索引，支持精确查重。
+    %VHYBRID_CLOSED_SET 保存五维连续状态索引和挡位，支持精确查重。
 
     properties (Access = private)
         keys_;
@@ -29,9 +29,9 @@ classdef vhybrid_closed_set < handle
 
     methods (Access = private)
         function key = key(~, node)
-            %KEY 组合五维索引；不同时间或航向不会被合并。
-            key = sprintf('%d_%d_%d_%d_%d', node.x_index, node.y_index, ...
-                node.yaw_index, node.velocity_index, node.time_index);
+            %KEY 同位置/时间/速度的前进与倒车节点也不能错误合并。
+            key = sprintf('%d_%d_%d_%d_%d_%d', node.x_index, node.y_index, ...
+                node.yaw_index, node.velocity_index, node.time_index,node.gear);
         end
     end
 end

@@ -11,7 +11,7 @@ function path = run_vhybrid_astar_demo(vehicle_index, save_outputs)
 
 if nargin < 1, vehicle_index = 3; end
 if nargin < 2, save_outputs = true; end
-this_dir = fileparts(mfilename('fullpath'));
+this_dir = fileparts(mfilename('fullpath'));    
 project_dir = fileparts(fileparts(this_dir));
 config_dir = fullfile(project_dir, 'config');
 vehicle_config = jsondecode(fileread(fullfile(config_dir, 'vehicle_config.json')));

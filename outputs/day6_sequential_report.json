@@ -7,27 +7,35 @@
     "valid": true,
     "error_code": 0,
     "search_statistics": {
-      "expanded_nodes": 1,
-      "generated_nodes": 0,
-      "sampled_controls": 0,
+      "expanded_nodes": 13,
+      "generated_nodes": 291,
+      "sampled_controls": 301,
       "collision_pruned_nodes": 0,
-      "constraint_pruned_nodes": 0,
+      "constraint_pruned_nodes": 10,
       "closed_pruned_nodes": 0,
       "goal_connection_candidates": 1,
       "goal_connection_collision_pruned": 0,
       "goal_connection_geometric_candidates": 1,
       "goal_connection_boundary_pruned": 0,
-      "open_peak": 1,
-      "path_nodes": 165,
-      "elapsed_sec": 0.0460452,
+      "open_peak": 206,
+      "path_nodes": 234,
+      "elapsed_sec": 0.2320422,
       "dynamic_pruned": 0,
       "resource_pruned": 0,
       "braking_midpoint_pruned": 0,
       "faster_controls_skipped": 0,
-      "waiting_nodes": 0,
+      "waiting_nodes": 6,
       "horizon_pruned": 0,
-      "reason_counts": {},
-      "conflict_examples": []
+      "reason_counts": {
+        "kinematic_constraint": 10
+      },
+      "conflict_examples": [],
+      "reverse_nodes": 0,
+      "gear_switch_nodes": 1,
+      "gear_switch_pruned": 0,
+      "path_reverse_distance_m": 0,
+      "path_gear_switches": 0,
+      "path_gear_wait_time_s": 0
     },
     "failure_diagnostics": {},
     "start_state": [
@@ -38,51 +46,56 @@
       0
     ],
     "final_state": [
-      14.999999999999961,
-      8.9999999999999076,
-      -3.1415926535795897,
+      9.9999999999999787,
+      5,
+      -3.1415926535795928,
       0,
-      10.760638982504577
+      9.5215092832741242
     ],
-    "final_position_error_m": 1.002973292933483E-13,
-    "final_heading_error_rad": 3.5527136788005009E-15,
+    "final_position_error_m": 2.1316282072803006E-14,
+    "final_heading_error_rad": 7.1054273576010019E-15,
     "kinematic_validation": {
       "valid": true,
-      "max_position_residual_m": 1.0658141036401503E-14,
-      "max_heading_residual_rad": 1.3322676295501878E-15,
-      "max_speed_residual_mps": 2.3314683517128287E-15,
-      "max_heading_step_rad": 0.018181818181152387,
+      "max_position_residual_m": 7.944109290391274E-15,
+      "max_heading_residual_rad": 8.8817841970012523E-16,
+      "max_speed_residual_mps": 2.2204460492503131E-15,
+      "max_heading_step_rad": 0.022017045453738504,
       "collision_count": 0,
-      "constraint_failures": 0
-    }
+      "constraint_failures": 0,
+      "gear_change_count": 0,
+      "gear_change_failures": 0,
+      "minimum_gear_change_wait_s": null
+    },
+    "reverse_samples": 0,
+    "gear_switches": 0
   },
   "low_priority_path": {
     "valid": true,
     "error_code": 0,
     "search_statistics": {
-      "expanded_nodes": 29,
-      "generated_nodes": 181,
-      "sampled_controls": 350,
-      "collision_pruned_nodes": 160,
-      "constraint_pruned_nodes": 9,
-      "closed_pruned_nodes": 0,
-      "goal_connection_candidates": 128,
-      "goal_connection_collision_pruned": 27,
-      "goal_connection_geometric_candidates": 121,
-      "goal_connection_boundary_pruned": 94,
-      "open_peak": 142,
-      "path_nodes": 412,
-      "elapsed_sec": 2.0045254,
-      "dynamic_pruned": 187,
-      "resource_pruned": 187,
-      "braking_midpoint_pruned": 18,
-      "faster_controls_skipped": 70,
-      "waiting_nodes": 0,
+      "expanded_nodes": 1600,
+      "generated_nodes": 15429,
+      "sampled_controls": 34690,
+      "collision_pruned_nodes": 16587,
+      "constraint_pruned_nodes": 2674,
+      "closed_pruned_nodes": 6334,
+      "goal_connection_candidates": 1,
+      "goal_connection_collision_pruned": 0,
+      "goal_connection_geometric_candidates": 1,
+      "goal_connection_boundary_pruned": 0,
+      "open_peak": 2370,
+      "path_nodes": 318,
+      "elapsed_sec": 43.0505472,
+      "dynamic_pruned": 16587,
+      "resource_pruned": 16587,
+      "braking_midpoint_pruned": 1378,
+      "faster_controls_skipped": 5369,
+      "waiting_nodes": 414,
       "horizon_pruned": 0,
       "reason_counts": {
-        "initial_motion_required": 9,
-        "dynamic_resource_block": 187,
-        "analytic_boundary_collision": 94
+        "initial_motion_required": 15,
+        "kinematic_constraint": 2659,
+        "dynamic_resource_block": 16587
       },
       "conflict_examples": [
         {
@@ -90,10 +103,122 @@
           "reason": "dynamic_resource_block",
           "minimum_distance_m": null,
           "minimum_distance_lower_bound_m": null,
-          "conflict_time_s": 5.25,
+          "conflict_time_s": 4.5,
           "conflict_position_xy": [
-            17.75,
-            10.25
+            14.75,
+            9.75
+          ],
+          "obstacle_id": "vehicle_002",
+          "resource_conflict": true,
+          "physical_collision": false,
+          "rectangle_collision": false,
+          "checked_samples": 0,
+          "resource_indices": 22770,
+          "resources_checked": 195,
+          "has_intermediate_conflict": false,
+          "distance_evaluated": false,
+          "distance_samples": [],
+          "filter_statistics": {
+            "circle_positive": 0,
+            "aabb_positive": 0,
+            "rectangle_positive": 0,
+            "circle_false_positive": 0,
+            "aabb_false_positive": 0
+          }
+        },
+        {
+          "collision": true,
+          "reason": "dynamic_resource_block",
+          "minimum_distance_m": null,
+          "minimum_distance_lower_bound_m": null,
+          "conflict_time_s": 4.5,
+          "conflict_position_xy": [
+            14.75,
+            9.75
+          ],
+          "obstacle_id": "vehicle_002",
+          "resource_conflict": true,
+          "physical_collision": false,
+          "rectangle_collision": false,
+          "checked_samples": 0,
+          "resource_indices": 22770,
+          "resources_checked": 195,
+          "has_intermediate_conflict": false,
+          "distance_evaluated": false,
+          "distance_samples": [],
+          "filter_statistics": {
+            "circle_positive": 0,
+            "aabb_positive": 0,
+            "rectangle_positive": 0,
+            "circle_false_positive": 0,
+            "aabb_false_positive": 0
+          }
+        },
+        {
+          "collision": true,
+          "reason": "dynamic_resource_block",
+          "minimum_distance_m": null,
+          "minimum_distance_lower_bound_m": null,
+          "conflict_time_s": 4.5,
+          "conflict_position_xy": [
+            14.75,
+            9.75
+          ],
+          "obstacle_id": "vehicle_002",
+          "resource_conflict": true,
+          "physical_collision": false,
+          "rectangle_collision": false,
+          "checked_samples": 0,
+          "resource_indices": 22770,
+          "resources_checked": 195,
+          "has_intermediate_conflict": false,
+          "distance_evaluated": false,
+          "distance_samples": [],
+          "filter_statistics": {
+            "circle_positive": 0,
+            "aabb_positive": 0,
+            "rectangle_positive": 0,
+            "circle_false_positive": 0,
+            "aabb_false_positive": 0
+          }
+        },
+        {
+          "collision": true,
+          "reason": "dynamic_resource_block",
+          "minimum_distance_m": null,
+          "minimum_distance_lower_bound_m": null,
+          "conflict_time_s": 4.5,
+          "conflict_position_xy": [
+            14.75,
+            9.75
+          ],
+          "obstacle_id": "vehicle_002",
+          "resource_conflict": true,
+          "physical_collision": false,
+          "rectangle_collision": false,
+          "checked_samples": 0,
+          "resource_indices": 22770,
+          "resources_checked": 195,
+          "has_intermediate_conflict": false,
+          "distance_evaluated": false,
+          "distance_samples": [],
+          "filter_statistics": {
+            "circle_positive": 0,
+            "aabb_positive": 0,
+            "rectangle_positive": 0,
+            "circle_false_positive": 0,
+            "aabb_false_positive": 0
+          }
+        },
+        {
+          "collision": true,
+          "reason": "dynamic_resource_block",
+          "minimum_distance_m": null,
+          "minimum_distance_lower_bound_m": null,
+          "conflict_time_s": 4.5,
+          "conflict_position_xy": [
+            15.25,
+            9.25
           ],
           "obstacle_id": "vehicle_002",
           "resource_conflict": true,
@@ -101,12 +226,11 @@
           "rectangle_collision": false,
           "checked_samples": 0,
           "resource_indices": [
-            25236,
-            25295,
-            25296
+            22711,
+            22770
           ],
-          "resources_checked": 3,
-          "has_intermediate_conflict": true,
+          "resources_checked": 195,
+          "has_intermediate_conflict": false,
           "distance_evaluated": false,
           "distance_samples": [],
           "filter_statistics": {
@@ -122,10 +246,10 @@
           "reason": "dynamic_resource_block",
           "minimum_distance_m": null,
           "minimum_distance_lower_bound_m": null,
-          "conflict_time_s": 5.25,
+          "conflict_time_s": 4.5,
           "conflict_position_xy": [
-            17.75,
-            10.25
+            14.75,
+            9.75
           ],
           "obstacle_id": "vehicle_002",
           "resource_conflict": true,
@@ -133,12 +257,11 @@
           "rectangle_collision": false,
           "checked_samples": 0,
           "resource_indices": [
-            25236,
-            25295,
-            25296
+            22770,
+            22830
           ],
-          "resources_checked": 3,
-          "has_intermediate_conflict": true,
+          "resources_checked": 195,
+          "has_intermediate_conflict": false,
           "distance_evaluated": false,
           "distance_samples": [],
           "filter_statistics": {
@@ -154,38 +277,10 @@
           "reason": "dynamic_resource_block",
           "minimum_distance_m": null,
           "minimum_distance_lower_bound_m": null,
-          "conflict_time_s": 7.25,
+          "conflict_time_s": 4.5,
           "conflict_position_xy": [
-            16.75,
-            6.75
-          ],
-          "obstacle_id": "vehicle_002",
-          "resource_conflict": true,
-          "physical_collision": false,
-          "rectangle_collision": false,
-          "checked_samples": 0,
-          "resource_indices": 34414,
-          "resources_checked": 1,
-          "has_intermediate_conflict": true,
-          "distance_evaluated": false,
-          "distance_samples": [],
-          "filter_statistics": {
-            "circle_positive": 0,
-            "aabb_positive": 0,
-            "rectangle_positive": 0,
-            "circle_false_positive": 0,
-            "aabb_false_positive": 0
-          }
-        },
-        {
-          "collision": true,
-          "reason": "dynamic_resource_block",
-          "minimum_distance_m": null,
-          "minimum_distance_lower_bound_m": null,
-          "conflict_time_s": 5.25,
-          "conflict_position_xy": [
-            17.75,
-            10.25
+            14.75,
+            9.75
           ],
           "obstacle_id": "vehicle_002",
           "resource_conflict": true,
@@ -193,39 +288,10 @@
           "rectangle_collision": false,
           "checked_samples": 0,
           "resource_indices": [
-            25236,
-            25295,
-            25296
+            22770,
+            22830
           ],
-          "resources_checked": 3,
-          "has_intermediate_conflict": true,
-          "distance_evaluated": false,
-          "distance_samples": [],
-          "filter_statistics": {
-            "circle_positive": 0,
-            "aabb_positive": 0,
-            "rectangle_positive": 0,
-            "circle_false_positive": 0,
-            "aabb_false_positive": 0
-          }
-        },
-        {
-          "collision": true,
-          "reason": "dynamic_resource_block",
-          "minimum_distance_m": null,
-          "minimum_distance_lower_bound_m": null,
-          "conflict_time_s": 5,
-          "conflict_position_xy": [
-            17.25,
-            10.75
-          ],
-          "obstacle_id": "vehicle_002",
-          "resource_conflict": true,
-          "physical_collision": false,
-          "rectangle_collision": false,
-          "checked_samples": 0,
-          "resource_indices": 25295,
-          "resources_checked": 1,
+          "resources_checked": 195,
           "has_intermediate_conflict": false,
           "distance_evaluated": false,
           "distance_samples": [],
@@ -242,38 +308,10 @@
           "reason": "dynamic_resource_block",
           "minimum_distance_m": null,
           "minimum_distance_lower_bound_m": null,
-          "conflict_time_s": 5,
+          "conflict_time_s": 4.5,
           "conflict_position_xy": [
-            17.25,
-            10.75
-          ],
-          "obstacle_id": "vehicle_002",
-          "resource_conflict": true,
-          "physical_collision": false,
-          "rectangle_collision": false,
-          "checked_samples": 0,
-          "resource_indices": 25295,
-          "resources_checked": 1,
-          "has_intermediate_conflict": false,
-          "distance_evaluated": false,
-          "distance_samples": [],
-          "filter_statistics": {
-            "circle_positive": 0,
-            "aabb_positive": 0,
-            "rectangle_positive": 0,
-            "circle_false_positive": 0,
-            "aabb_false_positive": 0
-          }
-        },
-        {
-          "collision": true,
-          "reason": "dynamic_resource_block",
-          "minimum_distance_m": null,
-          "minimum_distance_lower_bound_m": null,
-          "conflict_time_s": 5,
-          "conflict_position_xy": [
-            17.75,
-            10.25
+            14.75,
+            9.75
           ],
           "obstacle_id": "vehicle_002",
           "resource_conflict": true,
@@ -281,10 +319,10 @@
           "rectangle_collision": false,
           "checked_samples": 0,
           "resource_indices": [
-            25236,
-            25295
+            22770,
+            22830
           ],
-          "resources_checked": 2,
+          "resources_checked": 195,
           "has_intermediate_conflict": false,
           "distance_evaluated": false,
           "distance_samples": [],
@@ -301,18 +339,21 @@
           "reason": "dynamic_resource_block",
           "minimum_distance_m": null,
           "minimum_distance_lower_bound_m": null,
-          "conflict_time_s": 5,
+          "conflict_time_s": 4.5,
           "conflict_position_xy": [
-            17.75,
-            10.25
+            14.75,
+            9.75
           ],
           "obstacle_id": "vehicle_002",
           "resource_conflict": true,
           "physical_collision": false,
           "rectangle_collision": false,
           "checked_samples": 0,
-          "resource_indices": 25236,
-          "resources_checked": 1,
+          "resource_indices": [
+            22770,
+            22830
+          ],
+          "resources_checked": 195,
           "has_intermediate_conflict": false,
           "distance_evaluated": false,
           "distance_samples": [],
@@ -329,46 +370,23 @@
           "reason": "dynamic_resource_block",
           "minimum_distance_m": null,
           "minimum_distance_lower_bound_m": null,
-          "conflict_time_s": 5,
+          "conflict_time_s": 4.5,
           "conflict_position_xy": [
-            17.75,
-            10.25
+            14.75,
+            9.75
           ],
           "obstacle_id": "vehicle_002",
           "resource_conflict": true,
           "physical_collision": false,
           "rectangle_collision": false,
           "checked_samples": 0,
-          "resource_indices": 25236,
-          "resources_checked": 1,
-          "has_intermediate_conflict": false,
-          "distance_evaluated": false,
-          "distance_samples": [],
-          "filter_statistics": {
-            "circle_positive": 0,
-            "aabb_positive": 0,
-            "rectangle_positive": 0,
-            "circle_false_positive": 0,
-            "aabb_false_positive": 0
-          }
-        },
-        {
-          "collision": true,
-          "reason": "dynamic_resource_block",
-          "minimum_distance_m": null,
-          "minimum_distance_lower_bound_m": null,
-          "conflict_time_s": 5,
-          "conflict_position_xy": [
-            17.25,
-            10.75
+          "resource_indices": [
+            22770,
+            22771,
+            22830,
+            22831
           ],
-          "obstacle_id": "vehicle_002",
-          "resource_conflict": true,
-          "physical_collision": false,
-          "rectangle_collision": false,
-          "checked_samples": 0,
-          "resource_indices": 25295,
-          "resources_checked": 1,
+          "resources_checked": 195,
           "has_intermediate_conflict": false,
           "distance_evaluated": false,
           "distance_samples": [],
@@ -380,7 +398,13 @@
             "aabb_false_positive": 0
           }
         }
-      ]
+      ],
+      "reverse_nodes": 230,
+      "gear_switch_nodes": 69,
+      "gear_switch_pruned": 15,
+      "path_reverse_distance_m": 0,
+      "path_gear_switches": 0,
+      "path_gear_wait_time_s": 0
     },
     "failure_diagnostics": {},
     "start_state": [
@@ -391,31 +415,36 @@
       0
     ],
     "final_state": [
-      24.000000000000146,
-      15.000000000000036,
-      1.5707963267999752,
+      24.000000000000028,
+      14.999999999999945,
+      1.5707963267999894,
       0,
-      13.534503476799493
+      17.794404493956726
     ],
-    "final_position_error_m": 1.4993125209634564E-13,
-    "final_heading_error_rad": 2.4868995751603507E-14,
+    "final_position_error_m": 6.196914463356652E-14,
+    "final_heading_error_rad": 1.0658141036401503E-14,
     "kinematic_validation": {
       "valid": true,
-      "max_position_residual_m": 1.1374233532693354E-14,
+      "max_position_residual_m": 9.5659743364509064E-15,
       "max_heading_residual_rad": 1.7763568394002505E-15,
-      "max_speed_residual_mps": 2.3869795029440866E-15,
+      "max_speed_residual_mps": 4.8849813083506888E-15,
       "max_heading_step_rad": 0.022017045453738504,
       "collision_count": 0,
-      "constraint_failures": 0
-    }
+      "constraint_failures": 0,
+      "gear_change_count": 0,
+      "gear_change_failures": 0,
+      "minimum_gear_change_wait_s": null
+    },
+    "reverse_samples": 0,
+    "gear_switches": 0
   },
   "validation": {
     "valid": true,
     "reason": "passed",
     "collision": false,
     "conflict_reason": "none",
-    "minimum_distance_m": 2.1059832532341947,
-    "minimum_distance_lower_bound_m": 1.8874937604959192,
+    "minimum_distance_m": 1.0154905493325184,
+    "minimum_distance_lower_bound_m": 0.75330315804657244,
     "conflict_time_s": null,
     "conflict_position_xy": [
       null,
@@ -427,12 +456,12 @@
     "both_move_immediately": true,
     "both_stop_at_goal": true,
     "both_kinematics_valid": true,
-    "dynamic_pruned_nodes": 187,
-    "resource_pruned_nodes": 187,
+    "dynamic_pruned_nodes": 16587,
+    "resource_pruned_nodes": 16587,
     "rejection_counts": {
-      "initial_motion_required": 9,
-      "dynamic_resource_block": 187,
-      "analytic_boundary_collision": 94
+      "initial_motion_required": 15,
+      "kinematic_constraint": 2659,
+      "dynamic_resource_block": 16587
     },
     "adjustable_speed_range_mps": [
       0,
@@ -454,28 +483,28 @@
       "cell_padding_m": 0.35355339059327379
     },
     "high_priority": {
-      "sampled_poses": 538,
-      "swept_segments": 185,
-      "max_sweep_padding_m": 0.045026883002909079,
-      "marked_resource_blocks": 8233,
-      "conflict_blocks": 389,
-      "new_blocks": 7844,
+      "sampled_poses": 673,
+      "swept_segments": 240,
+      "max_sweep_padding_m": 0.049999999999999982,
+      "marked_resource_blocks": 8326,
+      "conflict_blocks": 2857,
+      "new_blocks": 5469,
       "time_range": [
         0,
-        10.760638982504577
+        9.5215092832741242
       ],
       "end_policy": "hold_until_t_max"
     },
     "low_priority": {
-      "sampled_poses": 1270,
-      "swept_segments": 428,
-      "max_sweep_padding_m": 0.049999999999999718,
-      "marked_resource_blocks": 8704,
-      "conflict_blocks": 5117,
-      "new_blocks": 3587,
+      "sampled_poses": 979,
+      "swept_segments": 326,
+      "max_sweep_padding_m": 0.049999999999999933,
+      "marked_resource_blocks": 8443,
+      "conflict_blocks": 3965,
+      "new_blocks": 4478,
       "time_range": [
         0,
-        13.534503476799493
+        17.794404493956726
       ],
       "end_policy": "hold_until_t_max"
     }
@@ -484,14 +513,29 @@
     "trajectory_png": "F:\\study\\postgraduate\\联培\\路径规划论文\\代码\\辅助\\day 4\\MATLAB-9.11-45973bf338437f8ae7b9fe154fc587f714a4c0df\\outputs\\day6_search_trajectories.png",
     "speed_png": "F:\\study\\postgraduate\\联培\\路径规划论文\\代码\\辅助\\day 4\\MATLAB-9.11-45973bf338437f8ae7b9fe154fc587f714a4c0df\\outputs\\day6_speed_time.png",
     "animation_gif": "F:\\study\\postgraduate\\联培\\路径规划论文\\代码\\辅助\\day 4\\MATLAB-9.11-45973bf338437f8ae7b9fe154fc587f714a4c0df\\outputs\\day6_sequential_planning.gif",
+    "animation_preview_png": "F:\\study\\postgraduate\\联培\\路径规划论文\\代码\\辅助\\day 4\\MATLAB-9.11-45973bf338437f8ae7b9fe154fc587f714a4c0df\\outputs\\day6_animation_preview.png",
     "report_json": "F:\\study\\postgraduate\\联培\\路径规划论文\\代码\\辅助\\day 4\\MATLAB-9.11-45973bf338437f8ae7b9fe154fc587f714a4c0df\\outputs\\day6_sequential_report.json",
     "trajectory_mat": "F:\\study\\postgraduate\\联培\\路径规划论文\\代码\\辅助\\day 4\\MATLAB-9.11-45973bf338437f8ae7b9fe154fc587f714a4c0df\\outputs\\day6_sequential_trajectories.mat"
+  },
+  "timings": {
+    "configuration_s": 0.0040078,
+    "high_search_s": 0.2483723,
+    "resource_map_s": 0.0922397,
+    "low_search_s": 43.3595795,
+    "independent_validation_s": 0.3661523,
+    "low_resource_statistics_s": 0.0814007,
+    "compute_s": 44.1524399,
+    "plot_s": 1.6469848,
+    "animation_s": 11.7840021,
+    "file_output_s": 0.5329525,
+    "total_runtime_s": 58.1236773,
+    "measurement_note": "总耗时统计至主结果首次保存完成；随后小计时变量追加及JSON写回不计入。MAT内result.timings是IO前值，准确计时取MAT顶层timings、JSON或函数返回result.timings。"
   },
   "final_conflict_report": {
     "collision": false,
     "reason": "none",
-    "minimum_distance_m": 2.1059832532341947,
-    "minimum_distance_lower_bound_m": 1.8874937604959192,
+    "minimum_distance_m": 1.0154905493325184,
+    "minimum_distance_lower_bound_m": 0.75330315804657244,
     "conflict_time_s": null,
     "conflict_position_xy": [
       null,
@@ -501,17 +545,17 @@
     "resource_conflict": false,
     "physical_collision": false,
     "rectangle_collision": false,
-    "checked_samples": 1612,
+    "checked_samples": 1518,
     "resource_indices": [],
-    "resources_checked": 8704,
+    "resources_checked": 8443,
     "has_intermediate_conflict": false,
     "distance_evaluated": true,
     "filter_statistics": {
-      "circle_positive": 207,
-      "aabb_positive": 56,
+      "circle_positive": 251,
+      "aabb_positive": 64,
       "rectangle_positive": 0,
-      "circle_false_positive": 207,
-      "aabb_false_positive": 56
+      "circle_false_positive": 251,
+      "aabb_false_positive": 64
     }
   }
 }
