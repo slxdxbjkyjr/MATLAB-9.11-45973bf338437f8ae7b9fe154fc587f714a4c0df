@@ -2,9 +2,7 @@ function path = summon_vhybrid_astar(start_state,goal_state,map,vehicle_config,p
 %SUMMON_VHYBRID_ASTAR 单车/顺序多车共用的五维 V-Hybrid A* 搜索器。
 % 输入：起终点[x,y,theta,v,t]、静态地图、集中配置；可选时空地图及高优先级车辆。
 % 输出：路径、搜索节点、运动学/动态验收和明确的失败原因。
-% initial_gear_mode='auto' 时，静止起点把前进/倒车作为两种起步前已选挡位，
-% 由同一次搜索选择；运行中的方向切换仍须停稳并等待配置换挡时间。
-% options.initial_gear 可选锁定初挡位，优先于自动模式。v 始终为非负速度大小。
+% options.initial_gear 可选覆盖配置初挡位。v 始终为非负速度大小。
 % 状态按x/y/theta/v/t/gear查重。控制由Day3挡位适配模型积分；所有运动段在加入
 % Open之前接受静态与动态碰撞验收。无动态参数时保持Day4单车接口行为。
 if nargin < 6, st_map = []; end
@@ -13,12 +11,7 @@ if nargin < 8, options = struct(); end
 cfg = planner_config.vhybrid;
 initial_gear = 1;
 if isfield(cfg,'initial_gear'), initial_gear = cfg.initial_gear; end
-initial_gear_mode = 'fixed';
-if isfield(cfg,'initial_gear_mode'), initial_gear_mode = cfg.initial_gear_mode; end
-if isfield(options,'initial_gear')
-    initial_gear = options.initial_gear;
-    initial_gear_mode = 'fixed';
-end
+if isfield(options,'initial_gear'), initial_gear = options.initial_gear; end
 start_state = double(start_state(:).'); goal_state = double(goal_state(:).');
 has_context = ~isempty(st_map) || ~isempty(higher_priority_trajectories);
 if has_context, validate_st_occupancy_config(planner_config); end
@@ -27,8 +20,6 @@ if numel(start_state) ~= 5 || numel(goal_state) ~= 5 || ...
         any(~isfinite([start_state,goal_state])) || start_state(4) < planner_config.dynamics.v_min_mps || ...
         start_state(4) > planner_config.dynamics.v_max_mps || ...
         ~isscalar(initial_gear) || ~ismember(initial_gear,[-1,1]) || ...
-        ~(ischar(initial_gear_mode) || (isstring(initial_gear_mode) && isscalar(initial_gear_mode))) || ...
-        ~any(strcmp(initial_gear_mode,{'fixed','auto'})) || ...
         (initial_gear<0 && (~isfield(cfg,'reverse_enabled') || ~cfg.reverse_enabled)) || ...
         (initial_gear<0 && isfield(cfg,'max_reverse_speed_mps') && start_state(4)>cfg.max_reverse_speed_mps)
     path.error_code = uint8(1);
@@ -36,19 +27,9 @@ if numel(start_state) ~= 5 || numel(goal_state) ~= 5 || ...
     return;
 end
 path.goal_pose = goal_state(1:3);
-initial_gear_mode = char(initial_gear_mode);
-path.initial_gear_mode = initial_gear_mode;
-initial_gears = initial_gear;
-% 自动选挡只适用于真正静止的起点；即使微小非零速度也不能瞬间反向。
-if strcmp(initial_gear_mode,'auto') && start_state(4)==0 && ...
-        isfield(cfg,'reverse_enabled') && cfg.reverse_enabled
-    initial_gears = [initial_gear,-initial_gear];
-end
 timer_id = tic;
 map = prepare_static_context(map,vehicle_config);
 stats = initStats();
-stats.initial_gears = initial_gears;
-stats.initial_gear_mode = initial_gear_mode;
 [start_collision, ~] = day6_static_collision_check(start_state(1:3), map, vehicle_config);
 [goal_collision, ~] = day6_static_collision_check(goal_state(1:3), map, vehicle_config);
 if start_collision
@@ -75,26 +56,15 @@ if has_context
     end
 end
 start_indices = discretizeState(start_state, map, cfg);
-% 根节点也计入搜索节点预算；不能为了多根初始化越过 max_search_nodes。
-if numel(initial_gears)>cfg.max_search_nodes
-    path.error_code = uint8(5);
-    path.search_statistics = finishStats(stats,timer_id);
-    path.failure_diagnostics = failureDiagnostics(path,planner_config);
-    return;
-end
+start_node = vhybrid_node(start_state, 0, 0, 0, 0, ...
+    goalHeuristic(start_state, goal_state, cfg), start_indices, 1,initial_gear,false);
 open_set = vhybrid_open_set();
 closed_set = vhybrid_closed_set();
+open_set.push(start_node);
 nodes = repmat(vhybrid_node(), double(cfg.max_search_nodes), 1);
-node_count = numel(initial_gears);
-for root_id = 1:node_count
-    start_node = vhybrid_node(start_state,0,0,0,0, ...
-        goalHeuristic(start_state,goal_state,cfg),start_indices,root_id,initial_gears(root_id),false);
-    % 两根同一 t=0 位姿且 g=0；挡位查重键不同，父编号均为0。
-    % 回溯只保留实际选择的一根，不生成虚构的驻留/换挡边。
-    nodes(root_id) = start_node;
-    open_set.push(start_node);
-end
-stats.open_peak = node_count;
+nodes(1) = start_node;
+node_count = 1;
+stats.open_peak = 1;
 
 while ~open_set.is_empty()
     if toc(timer_id) > cfg.max_search_time_s
@@ -216,9 +186,6 @@ end
 indices = indices(count:-1:1);
 path = emptyPath();
 first = nodes(indices(1));
-path.selected_initial_gear = first.gear;
-path.initial_gear_mode = stats.initial_gear_mode;
-stats.selected_initial_gear = first.gear;
 states = [first.x,first.y,first.theta,first.v,first.t];
 controls = [0,0,0,first.gear,0]; % 每行 [a,delta,带方向弧长,gear,换挡标记]
 cfg = planner.vhybrid;
@@ -294,7 +261,6 @@ function path = emptyPath()
 path = struct('x',zeros(0,1),'y',zeros(0,1),'theta',zeros(0,1), ...
     'v',zeros(0,1),'t',zeros(0,1),'direction',zeros(0,1), ...
     'gear',zeros(0,1),'is_gear_change',false(0,1), ...
-    'initial_gear_mode','fixed','selected_initial_gear',NaN, ...
     'valid',false,'error_code',uint8(0),'search_nodes',repmat(vhybrid_node(),0,1), ...
     'search_statistics',initStats(),'goal_pose',zeros(1,3), ...
     'final_position_error_m',NaN,'final_heading_error_rad',NaN, ...
@@ -340,8 +306,7 @@ stats = struct('expanded_nodes',0,'generated_nodes',0,'sampled_controls',0, ...
     'resource_pruned',0,'braking_midpoint_pruned',0,'faster_controls_skipped',0, ...
     'waiting_nodes',0,'horizon_pruned',0,'reason_counts',struct(),'conflict_examples',{{}}, ...
     'reverse_nodes',0,'gear_switch_nodes',0,'gear_switch_pruned',0, ...
-    'path_reverse_distance_m',0,'path_gear_switches',0,'path_gear_wait_time_s',0, ...
-    'initial_gear_mode','fixed','initial_gears',zeros(1,0),'selected_initial_gear',NaN);
+    'path_reverse_distance_m',0,'path_gear_switches',0,'path_gear_wait_time_s',0);
 end
 
 function stats = finishStats(stats, timer_id)
@@ -418,29 +383,4 @@ if isfield(planner,'st_occupancy')
     diagnostics.adjustable_entry_times_s = planner.st_occupancy.t_min:planner.st_occupancy.dt:planner.st_occupancy.t_max;
 end
 diagnostics.rejection_counts = path.search_statistics.reason_counts;
-if path.error_code==uint8(9)
-    % 搜索尚未开始的初始不可行必须单独说明，调速度或自动延迟起步
-    % 不能消除已有的 t=0 重叠；保留矩形和栅格两种证据便于定位。
-    report = path.dynamic_validation;
-    details = struct('collision_reason','','resource_conflict',false, ...
-        'safety_rectangle_collision',false,'physical_collision',false, ...
-        'minimum_distance_m',NaN,'minimum_distance_lower_bound_m',NaN, ...
-        'obstacle_id','','conflict_time_s',NaN,'conflict_position_xy',[NaN,NaN], ...
-        'resource_block_count',0);
-    fields = {'resource_conflict','physical_collision','minimum_distance_m', ...
-        'minimum_distance_lower_bound_m','obstacle_id','conflict_time_s','conflict_position_xy'};
-    for k=1:numel(fields)
-        if isfield(report,fields{k}), details.(fields{k}) = report.(fields{k}); end
-    end
-    if isfield(report,'reason'), details.collision_reason = report.reason; end
-    if isfield(report,'rectangle_collision'), details.safety_rectangle_collision = report.rectangle_collision; end
-    if isfield(report,'resource_indices'), details.resource_block_count = numel(report.resource_indices); end
-    diagnostics.initial_conflict = details;
-    diagnostics.adjustable_entry_times_s = [];
-    if details.safety_rectangle_collision || details.physical_collision
-        diagnostics.note = 't=0车辆车身或安全矩形已经重叠，搜索未启动；调低低优先级速度或换挡不能消除初始重叠。请核查起始位置与安全裕度，不能通过自动延迟起步绕过。';
-    else
-        diagnostics.note = 't=0起始车身命中已预留时空资源块，搜索未启动；请核查资源块分辨率、层内扫掠及初始安全矩形。不能仅跳过检查或自动延迟起步来宣称成功。';
-    end
-end
 end

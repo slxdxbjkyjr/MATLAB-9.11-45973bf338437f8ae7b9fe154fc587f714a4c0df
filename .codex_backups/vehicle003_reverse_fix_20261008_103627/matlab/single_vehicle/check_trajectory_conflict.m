@@ -78,9 +78,6 @@ for n = 1:numel(obstacles)
     relative_bound = cornerRate(states,footprint)+cornerRate(obstacles(n).states,obstacles(n).footprint);
     padding = relative_bound*step/4;
     maximum_uncertainty = max(maximum_uncertainty,relative_bound*step/2);
-    % 单一时刻没有采样间运动区间，诊断必须用该时刻原安全矩形。
-    % 不能把高车整条轨迹的最高速误加到静止起点，混淆实际安全冲突和资源冲突。
-    if duration == 0, padding = 0; maximum_uncertainty = 0; end
     safety = planner.day6;
     % 两车各加半份运动不确定半径；矩形包含采样间连续运动。
     safety.sweep_padding_m = padding;

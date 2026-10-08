@@ -1,7 +1,6 @@
 function result = run_day6_sequential_planning_demo(save_outputs,options)
 %RUN_DAY6_SEQUENTIAL_PLANNING_DEMO Day1车辆2/3从t=0静止同步运动的顺序规划。
 % 输入：save_outputs是否保存结果，默认true；options.planner_config可传完整配置副本。
-% options.scenario_config可传完整场景副本；options.output_subdir指定outputs下独立目录。
 % 输出：result含两车真实搜索路径、资源块统计、运动学/动态验收和失败诊断。
 % result.timings分开记录算法计算、PNG绘图、GIF动画及文件输出，单位均为秒。
 % 先计算高优先级路径，再预留其完整车身扫掠及终点停车资源，最后计算低优先级
@@ -30,18 +29,6 @@ planner.vhybrid.heuristic_method = planner.day6.heuristic_method;
 planner.vhybrid.minimum_turning_radius_m = vehicle.dimensions_m.wheelbase / ...
     tan(min(vehicle.steering.maximum_steer_rad,planner.dynamics.delta_max_rad));
 scenario = jsondecode(fileread(fullfile(config_dir,'scenario_001.json')));
-scenario_override_used = isfield(options,'scenario_config');
-if scenario_override_used, scenario = options.scenario_config; end
-% 对照实验单独保存图和报告，不能用可行场景的输出覆盖原场景失败记录。
-output_dir = fullfile(project_dir,'outputs');
-if isfield(options,'output_subdir')
-    label = options.output_subdir;
-    if ~(ischar(label) && isrow(label) || isstring(label) && isscalar(label)) || ...
-            isempty(regexp(char(label),'^[A-Za-z0-9_-]+$','once'))
-        error('Day6:InvalidArgument','output_subdir必须为不含路径分隔符的目录名称。');
-    end
-    output_dir = fullfile(output_dir,char(label));
-end
 geometry = summon_map(map_config);
 validate_st_occupancy_config(planner);
 high_config = scenarioVehicle(scenario,'vehicle_002');
@@ -52,9 +39,6 @@ result = struct('valid',false,'stage','day6_sequential_planning', ...
     'high_priority_id',high_config.id,'low_priority_id',low_config.id, ...
     'high_priority_path',struct(),'low_priority_path',struct(), ...
     'validation',struct(),'resource_statistics',struct(),'output_files',struct());
-result.scenario_override_used = scenario_override_used;
-result.input_states = struct('high_start',high_start,'high_goal',high_goal, ...
-    'low_start',low_start,'low_goal',low_goal);
 result.timings = struct('configuration_s',toc(total_timer),'high_search_s',0, ...
     'resource_map_s',0,'low_search_s',0,'independent_validation_s',0, ...
     'low_resource_statistics_s',0,'compute_s',0,'plot_s',0,'animation_s',0, ...
@@ -83,7 +67,7 @@ if ~high.valid
     validation.failure_diagnostics = high.failure_diagnostics;
     result.validation = validation;
     result.timings.compute_s = toc(total_timer);
-    result = finishResult(result,save_outputs,output_dir,total_timer);
+    result = finishResult(result,save_outputs,project_dir,total_timer);
     return;
 end
 
@@ -115,7 +99,7 @@ if ~low.valid
     validation.failure_diagnostics = low.failure_diagnostics;
     result.validation = validation;
     result.timings.compute_s = toc(total_timer);
-    result = finishResult(result,save_outputs,output_dir,total_timer);
+    result = finishResult(result,save_outputs,project_dir,total_timer);
     return;
 end
 
@@ -176,6 +160,7 @@ if result.valid
     result.timings.low_resource_statistics_s = toc(section_timer);
     result.timings.compute_s = toc(total_timer);
     if save_outputs
+        output_dir = fullfile(project_dir,'outputs');
         if ~exist(output_dir,'dir'), mkdir(output_dir); end
         [result.output_files,graphics_timings] = ...
             plot_day6_trajectories(high,low,geometry,vehicle,planner,output_dir,conflict.distance_samples);
@@ -185,20 +170,20 @@ if result.valid
 else
     result.timings.compute_s = toc(total_timer);
 end
-result = finishResult(result,save_outputs,output_dir,total_timer);
+result = finishResult(result,save_outputs,project_dir,total_timer);
 end
 
-function result = finishResult(result,enabled,output_dir,total_timer)
+function result = finishResult(result,enabled,project_dir,total_timer)
 %FINISHRESULT 成功或明确规划失败均输出计时；计算时间不包含PNG/GIF与文件写入。
 output_timer = tic;
-result = saveResult(result,enabled,output_dir);
+result = saveResult(result,enabled,project_dir);
 result.timings.file_output_s = toc(output_timer);
 result.timings.total_runtime_s = toc(total_timer);
 % 大轨迹result只保存一次；只追加小计时变量及更新JSON，避免重复压缩巨大MAT。
 if enabled
     timings = result.timings; 
     save(result.output_files.trajectory_mat,'timings','-append');
-    result = saveResult(result,true,output_dir,false);
+    result = saveResult(result,true,project_dir,false);
 end
 t = result.timings;
 fprintf(['Day6计算时间 %.3f s（高车搜索 %.3f，资源地图 %.3f，低车搜索 %.3f，' ...
@@ -206,18 +191,6 @@ fprintf(['Day6计算时间 %.3f s（高车搜索 %.3f，资源地图 %.3f，低�
     '总运行 %.3f s；结果：%s。\n'],t.compute_s,t.high_search_s,t.resource_map_s, ...
     t.low_search_s,t.independent_validation_s,t.plot_s,t.animation_s, ...
     t.file_output_s,t.total_runtime_s,result.validation.reason);
-low = result.low_priority_path;
-if isfield(low,'failure_diagnostics') && isfield(low.failure_diagnostics,'initial_conflict')
-    d = low.failure_diagnostics.initial_conflict;
-    fprintf(['%s未进入搜索：与%s的起点冲突；实际车身净距 %.3f m，' ...
-        '安全矩形冲突=%d，资源块冲突数=%d。\n%s\n'], ...
-        result.low_priority_id,d.obstacle_id,d.minimum_distance_m, ...
-        d.safety_rectangle_collision,d.resource_block_count,low.failure_diagnostics.note);
-elseif isfield(low,'valid') && low.valid
-    fprintf('%s起步挡位 %d，倒车距离 %.3f m，到达时间 %.3f s，终速 %.3f m/s。\n', ...
-        result.low_priority_id,low.gear(1),low.search_statistics.path_reverse_distance_m, ...
-        low.t(end),low.v(end));
-end
 end
 
 function vehicle = scenarioVehicle(scenario,id)
@@ -246,10 +219,11 @@ flag = numel(path.v) >= 2 && path.v(2) > 1e-9 && path.acceleration(2) > 0 && ...
     hypot(path.x(2)-path.x(1),path.y(2)-path.y(1)) > 1e-10;
 end
 
-function result = saveResult(result,enabled,output_dir,write_mat)
+function result = saveResult(result,enabled,project_dir,write_mat)
 %SAVERESULT 成功/失败均保存独立Day6数据；失败时不生成成功轨迹图或动画。
 if nargin < 4, write_mat = true; end
 if ~enabled, return; end
+output_dir = fullfile(project_dir,'outputs');
 if ~exist(output_dir,'dir'), mkdir(output_dir); end
 result.output_files.report_json = fullfile(output_dir,'day6_sequential_report.json');
 result.output_files.trajectory_mat = fullfile(output_dir,'day6_sequential_trajectories.mat');

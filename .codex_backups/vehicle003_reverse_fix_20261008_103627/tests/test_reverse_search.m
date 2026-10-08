@@ -191,8 +191,6 @@ classdef test_reverse_search < matlab.unittest.TestCase
             planner.vhybrid.gear_switch_penalty = 1;
             planner.vhybrid.max_reverse_speed_mps = 2;
             planner.vhybrid.initial_gear = 1;
-            % 本类专门验收固定前进初挡位下的运行中换挡，避免继承自动起步选挡。
-            planner.vhybrid.initial_gear_mode = 'fixed';
             planner.vhybrid.control_steering_samples_rad = linspace(-planner.dynamics.delta_max_rad, ...
                 planner.dynamics.delta_max_rad,5);
             planner.vhybrid.heuristic_method = 'euclidean';

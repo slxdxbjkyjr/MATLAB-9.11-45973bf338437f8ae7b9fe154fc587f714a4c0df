@@ -1,8 +1,8 @@
 {
   "schema_version": "day1.v1",
-  "scenario_id": "scenario_001",
-  "description": "三车从不同初始位置驶向三个召集点的最小场景",
-  "source": "day1_prototype_assumption",
+  "scenario_id": "scenario_vehicle003_reverse_feasible",
+  "description": "独立倒车对照：仅将原vehicle_003起点y从15m设为13.5m，消除初始安全重叠及早期扫掠资源冲突",
+  "source": "scenario_001_20261008_clearance_validation_copy",
   "map_config": "map_config.json",
   "vehicle_config": "vehicle_config.json",
   "planner_config": "planner_config.json",
@@ -25,14 +25,10 @@
       "id": "vehicle_003",
       "vehicle_type": "F515_APA_Seres_V3p24",
       "priority": 3,
-      "start_pose": {"x_m": 4.0, "y_m": 17, "yaw_rad": -1.57},
-      "summon_goal": {"id": "summon_point_003", "x_m": 24.0, "y_m": 15.0, "yaw_rad": 1.57}
+      "start_pose": {"x_m": 24.0, "y_m": 13.5, "yaw_rad": 0},
+      "summon_goal": {"id": "summon_point_003", "x_m": 4.0, "y_m": 17.0, "yaw_rad": 0}
     }
   ],
   "static_obstacles": [],
-  "todo": [
-    "用真实停车位出口位置替换三个 start_pose",
-    "用调度系统给出的召集点替换三个 summon_goal",
-    "补充真实静态障碍物和不可行驶区域"
-  ]
+  "todo": ["此对照配置与已确认修复场景起终点一致，用于独立保存验收输出。"]
 }
